@@ -1,0 +1,17 @@
+# ===== 超大 skill 目录：手动/网盘同步，不进 git（本机实测体积）=====
+fxiaoke-apl-testground/
+talking-video-auto-edit/
+wps-office-automation-skill/
+
+# ===== 迁移 / 元数据文件（无需同步）=====
+*.migration.json
+_disable_to_model_invocation_migration.json
+
+# ===== Python 缓存 =====
+__pycache__/
+*.pyc
+*.pyo
+
+# ===== 系统杂项 =====
+.DS_Store
+Thumbs.db

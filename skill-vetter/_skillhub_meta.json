@@ -1,0 +1,11 @@
+{
+  "name": "skill-vetter",
+  "installedAt": 1776925156516,
+  "source": "marketplace",
+  "iconSource": "skill-vetter",
+  "version": "1.0.0",
+  "skillId": "skill_2053082706530402304",
+  "skillName": "skill-vetter",
+  "description_zh": "安装前审查技能的安全性",
+  "description_en": "Security-first skill vetting before install"
+}

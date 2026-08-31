@@ -3,9 +3,8 @@ fxiaoke-apl-testground/
 talking-video-auto-edit/
 wps-office-automation-skill/
 
-# ===== 迁移 / 元数据文件（无需同步）=====
-*.migration.json
-_disable_to_model_invocation_migration.json
+# ===== 迁移 / 元数据文件（无需同步，避免干扰另一台机器的迁移状态）=====
+*migration*.json
 
 # ===== Python 缓存 =====
 __pycache__/

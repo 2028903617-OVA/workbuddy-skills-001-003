@@ -65,6 +65,9 @@ PAY_FALLBACK = {
     '西门子': '杭州欣锋控股集团有限公司',
 }
 
+# 不统计带单费的品牌: 内部员工主属品牌 属于这些值的整行直接删除
+BRAND_EXCLUDE = ['泽锋']
+
 
 def read_source(src, ref):
     df = pd.read_excel(src)
@@ -86,6 +89,25 @@ def read_source(src, ref):
     return df, card_map, pay_map
 
 
+import re
+
+# 组号后缀模式：匹配末尾的 "N组" / "第N组"（如 1组、2组、第1组、第2组）
+_GROUP_SUFFIX_RE = re.compile(r'[第]?\d+组\s*$')
+
+
+def _resolve_pay_company(dept, company, pay_map):
+    """解析付款公司：精确匹配 → 剥离组号后缀再匹配 → 公司兜底。"""
+    # 1) 精确匹配
+    if dept in pay_map and pay_map[dept]:
+        return pay_map[dept]
+    # 2) 剥离 "1组"/"2组"/"第1组" 等后缀，用基础部门名再查
+    base = _GROUP_SUFFIX_RE.sub('', dept).strip()
+    if base and base in pay_map and pay_map[base]:
+        return pay_map[base]
+    # 3) 公司级兜底
+    return PAY_FALLBACK.get(company, '')
+
+
 def fill_info(df, card_map, pay_map):
     """填充姓名/银行卡号/开户行/付款公司，打印匹配情况。"""
     df['姓名'] = ''
@@ -104,10 +126,7 @@ def fill_info(df, card_map, pay_map):
             df.at[i, '姓名'] = emp
             df.at[i, '银行卡号'] = card_map[emp][0]
             df.at[i, '开户行'] = card_map[emp][1]
-        if dept in pay_map and pay_map[dept]:
-            df.at[i, '内部带单费付款公司'] = pay_map[dept]
-        else:
-            df.at[i, '内部带单费付款公司'] = PAY_FALLBACK.get(company, '')
+        df.at[i, '内部带单费付款公司'] = _resolve_pay_company(dept, company, pay_map)
 
         status = 'OK' if (df.at[i, '银行卡号'] and df.at[i, '银行卡号'] != 'nan') else '未匹配'
         pay = df.at[i, '内部带单费付款公司']
@@ -120,7 +139,7 @@ def fill_info(df, card_map, pay_map):
     if unmatched_card:
         print(f"\n⚠️ 未匹配银行卡号: {unmatched_card}")
     if unmatched_pay:
-        print(f"⚠️ 未匹配付款公司: {unmatched_pay}")
+        print(f"\n⚠️ 未匹配付款公司: {unmatched_pay}")
     return df, unmatched_card
 
 
@@ -328,6 +347,17 @@ def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
         removed = df[df['公司'] == '大金']
         df = df[df['公司'] != '大金'].copy()
         print(f'\n已过滤大金数据 {len(removed)} 条，剩余 {len(df)} 条')
+
+    # 剔除不统计带单费的品牌 (内部员工主属品牌 命中 BRAND_EXCLUDE)
+    if BRAND_EXCLUDE:
+        mask = df['内部员工主属品牌'].astype(str).str.strip().isin(BRAND_EXCLUDE)
+        removed_brand = df[mask]
+        if len(removed_brand) > 0:
+            print(f'\n已剔除不统计带单费品牌({BRAND_EXCLUDE}) {len(removed_brand)} 条:')
+            for _, r in removed_brand.iterrows():
+                print(f"  - {r['内部员工姓名']} | {r['公司']} | {r['负责人主属部门']} | 品牌={r['内部员工主属品牌']}")
+        df = df[~mask].copy()
+        print(f'剔除后剩余 {len(df)} 条')
 
     # 排序: 公司 → 负责人主属部门
     df_sorted = df.sort_values(['公司', '负责人主属部门']).reset_index(drop=True)

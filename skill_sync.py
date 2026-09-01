@@ -93,7 +93,10 @@ def cmd_push(args) -> int:
     st = _run(["git", "status", "--porcelain"], check=False).stdout.strip()
     if st:
         msg = f"sync: machine {args.machine} {_dt.datetime.now():%Y-%m-%d %H:%M}"
-        _run(["git", "commit", "-q", "-m", msg], check=False)
+        r = _run(["git", "commit", "-q", "-m", msg], check=False)
+        if r.returncode != 0:
+            print(f"[push] ❌ commit 失败: {r.stderr.strip()}")
+            return 1
         print(f"[push] 已提交: {msg}")
     else:
         print("[push] 本机无改动，无需提交。")

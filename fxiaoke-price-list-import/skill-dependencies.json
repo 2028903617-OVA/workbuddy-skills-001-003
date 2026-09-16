@@ -1,0 +1,164 @@
+{
+  "schema_version": "1",
+  "capabilities": [
+    "源表识别与数据提取",
+    "产品匹配",
+    "明细查重与新建更新分拆",
+    "导入文件生成",
+    "产品核对清单生成"
+  ],
+  "dependencies": [
+    {
+      "id": "python-venv",
+      "type": "runtime",
+      "required": true,
+      "auth_type": "none",
+      "capabilities": ["导入文件生成"],
+      "checks": [
+        {"id": "python-version", "type": "python", "required": true, "min_version": "3.10"}
+      ],
+      "setup": {
+        "official_home_url": "https://www.python.org",
+        "official_docs_url": "https://docs.python.org/3/",
+        "steps": [
+          "优先使用 WorkBuddy 内置 venv Python（~/.workbuddy/binaries/python/envs/default 下的解释器）",
+          "若缺失：用内置 Python 执行 python -m venv 创建，再安装 openpyxl"
+        ],
+        "verify": "运行 check_environment.py，python 检查项为 ok",
+        "security": "无凭据，本地解释器",
+        "verified_at": "2026-09-12",
+        "applies_to_version": "Python 3.10+"
+      },
+      "degradation": [
+        {
+          "capability": "导入文件生成",
+          "trigger": "venv Python 不存在或版本低于 3.10",
+          "fallback": "停止流程，提示按 setup steps 创建/修复 venv",
+          "user_input": "无",
+          "limitations": "无法生成任何导入文件",
+          "evidence_label": "已验证",
+          "recovery": "创建可用 venv 后重跑 check_environment.py",
+          "stop_condition": "用户无法提供可用 Python 时终止"
+        }
+      ]
+    },
+    {
+      "id": "openpyxl",
+      "type": "local-tool",
+      "required": true,
+      "auth_type": "none",
+      "capabilities": ["源表识别与数据提取"],
+      "checks": [
+        {"id": "openpyxl-import", "type": "python", "required": true, "command": "import openpyxl"}
+      ],
+      "setup": {
+        "official_home_url": "https://openpyxl.readthedocs.io",
+        "official_docs_url": "https://openpyxl.readthedocs.io/en/stable/",
+        "steps": ["<venv Python> -m pip install openpyxl"],
+        "verify": "check_environment.py 中 openpyxl 检查项为 ok",
+        "security": "无凭据，纯本地库",
+        "verified_at": "2026-09-12",
+        "applies_to_version": "openpyxl 3.1.x"
+      },
+      "degradation": [
+        {
+          "capability": "源表识别与数据提取",
+          "trigger": "import openpyxl 失败",
+          "fallback": "needs_setup，仅提示安装命令，不猜测继续",
+          "user_input": "无",
+          "limitations": "无法解析源表与快照",
+          "evidence_label": "已验证",
+          "recovery": "安装 openpyxl 后重跑 check_environment.py",
+          "stop_condition": "安装失败且无替代解析器时终止"
+        }
+      ]
+    },
+    {
+      "id": "fs-server-mcp",
+      "type": "mcp",
+      "required": false,
+      "auth_type": "none",
+      "capabilities": ["产品匹配"],
+      "checks": [
+        {"id": "mcp-registered", "type": "mcp", "required": false, "server": "fs-server"},
+        {"id": "mcp-probe", "type": "mcp_probe", "required": true, "server": "fs-server", "target": "get-current-user"}
+      ],
+      "setup": {
+        "official_home_url": "https://www.fxiaoke.com",
+        "official_docs_url": "https://www.fxiaoke.com",
+        "steps": [
+          "在 WorkBuddy 连接器管理页找到 fs-server 并启用、信任",
+          "当前环境该 MCP 已知长期失效（HTTP 400），skill 默认使用本地快照，不依赖它"
+        ],
+        "verify": "MCP 工具 get-current-user 可正常返回用户身份",
+        "security": "授权与凭据由 WorkBuddy 宿主管理，skill 不接触任何凭据",
+        "verified_at": "2026-09-12",
+        "applies_to_version": "fs-server MCP（可选增强）"
+      },
+      "degradation": [
+        {
+          "capability": "产品匹配",
+          "trigger": "MCP 调用失败（当前常态）",
+          "fallback": "改用本地最新有效导出快照做产品匹配与查重，逻辑不变",
+          "user_input": "快照缺失时请用户提供导出文件或路径",
+          "limitations": "快照日期之后的系统变更不覆盖，核对清单会标注快照日期",
+          "evidence_label": "已验证",
+          "recovery": "MCP 恢复后可切换实时查询，无需改 skill 逻辑",
+          "stop_condition": "无（始终可用本地快照降级）"
+        }
+      ]
+    }
+  ],
+  "functional_degradations": [
+    {
+      "capability": "源表识别与数据提取",
+      "trigger": "源表 R1 首格既不是『纷享销客价目表新增（变更）申请表』也不是『唯一性ID（必填）』，或找不到数据 sheet",
+      "fallback": "停止处理，向用户展示实际读到的内容并询问源表是否正确",
+      "user_input": "用户确认源表路径或格式",
+      "limitations": "该源表本轮不产出任何文件",
+      "evidence_label": "已验证",
+      "recovery": "提供正确格式的源表后重跑",
+      "stop_condition": "用户无法提供可识别源表时终止"
+    },
+    {
+      "capability": "产品匹配",
+      "trigger": "Downloads 目录找不到有数据的产品对象导出快照，或源表型号在快照中无命中",
+      "fallback": "无快照时产品列直填源表原名并追加『未校验』；无命中时该行标记『金蝶未同步』，只进核对清单不进导入文件",
+      "user_input": "建议用户提供最新产品对象导出，或先在金蝶建好产品并同步",
+      "limitations": "未校验行的产品（必填）列可能与系统主属性不一致，导入可能失败",
+      "evidence_label": "部分验证",
+      "recovery": "提供快照或金蝶同步完成后重跑 build_import.py",
+      "stop_condition": "用户要求保证匹配正确性又拒绝提供快照时终止"
+    },
+    {
+      "capability": "明细查重与新建更新分拆",
+      "trigger": "Downloads 目录找不到有数据的价目表明细导出快照",
+      "fallback": "不做查重，全部行走新建文件，核对清单标注『未查重，可能重复导入』",
+      "user_input": "建议用户提供最新价目表明细导出文件",
+      "limitations": "已有明细可能被重复新建",
+      "evidence_label": "部分验证",
+      "recovery": "提供明细快照后重跑 build_import.py",
+      "stop_condition": "用户要求保证无重复又拒绝提供快照时终止"
+    },
+    {
+      "capability": "导入文件生成",
+      "trigger": "识别出的品牌不在启用价目表清单内，或型号未命中分类关键词",
+      "fallback": "价目表列或分类列留空，该行记入核对清单提示人工确认后补填",
+      "user_input": "用户确认品牌/价目表名或产品分类",
+      "limitations": "该行导入文件缺少对应必填或分类值，不能直接导入",
+      "evidence_label": "已验证",
+      "recovery": "人工补填，或更新 references 后重跑",
+      "stop_condition": "无（留空不阻断其他行）"
+    },
+    {
+      "capability": "产品核对清单生成",
+      "trigger": "本轮没有任何待同步、重复、分类未匹配或价目表未配置的警示项",
+      "fallback": "不生成核对清单文件，在对话中口头报告『全部通过』及所用快照日期",
+      "user_input": "无",
+      "limitations": "无文件留档，仅对话记录",
+      "evidence_label": "已验证",
+      "recovery": "无需恢复",
+      "stop_condition": "无"
+    }
+  ]
+}

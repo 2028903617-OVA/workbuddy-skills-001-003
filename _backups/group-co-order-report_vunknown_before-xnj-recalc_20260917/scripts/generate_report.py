@@ -68,10 +68,6 @@ PAY_FALLBACK = {
 # 不统计带单费的品牌: 内部员工主属品牌 属于这些值的整行直接删除
 BRAND_EXCLUDE = ['泽锋']
 
-# 带单费为0时按此系数重算 (仅限下列公司)
-ZERO_FEE_RECALC_RATE = 0.01
-ZERO_FEE_RECALC_COMPANIES = ['欣暖家']
-
 
 def read_source(src, ref):
     df = pd.read_excel(src)
@@ -145,37 +141,6 @@ def fill_info(df, card_map, pay_map):
     if unmatched_pay:
         print(f"\n⚠️ 未匹配付款公司: {unmatched_pay}")
     return df, unmatched_card
-
-
-def recalc_zero_fee(df, companies=None, rate=None):
-    """把指定公司里「现场管理/带单费」为 0 的行，按订单金额 × 系数重算带单费。
-
-    同步把「内部员工带单提成系数」写成该系数，保持两列一致。
-    只动命中行，其余行原值不变。返回 (df, 重算明细列表)。
-    """
-    if companies is None:
-        companies = ZERO_FEE_RECALC_COMPANIES
-    if rate is None:
-        rate = ZERO_FEE_RECALC_RATE
-    changed = []
-    for i, r in df.iterrows():
-        if str(r['公司']).strip() not in companies:
-            continue
-        try:
-            fee = float(r['现场管理/带单费'])
-        except (TypeError, ValueError):
-            continue
-        if fee != 0:
-            continue
-        try:
-            amount = float(r['销售订单金额(元)'])
-        except (TypeError, ValueError):
-            print(f"  ⚠️ {r['销售订单编号']} 订单金额无法解析，跳过重算")
-            continue
-        df.at[i, '现场管理/带单费'] = round(amount * rate, 2)
-        df.at[i, '内部员工带单提成系数'] = rate
-        changed.append((r['销售订单编号'], str(r['公司']).strip(), amount, round(amount * rate, 2)))
-    return df, changed
 
 
 # === 格式工具 ===
@@ -393,13 +358,6 @@ def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
                 print(f"  - {r['内部员工姓名']} | {r['公司']} | {r['负责人主属部门']} | 品牌={r['内部员工主属品牌']}")
         df = df[~mask].copy()
         print(f'剔除后剩余 {len(df)} 条')
-
-    # 指定公司里带单费为0的行，按订单金额 × 系数重算
-    df, recalc_rows = recalc_zero_fee(df)
-    if recalc_rows:
-        print(f'\n已按 {ZERO_FEE_RECALC_RATE:.0%} 重算带单费({ZERO_FEE_RECALC_COMPANIES}) {len(recalc_rows)} 条:')
-        for oid, comp, amt, new_fee in recalc_rows:
-            print(f"  - {oid} | {comp} | 订单金额 {amt:,.2f} × {ZERO_FEE_RECALC_RATE:.0%} = {new_fee:,.2f}")
 
     # 排序: 公司 → 负责人主属部门
     df_sorted = df.sort_values(['公司', '负责人主属部门']).reset_index(drop=True)

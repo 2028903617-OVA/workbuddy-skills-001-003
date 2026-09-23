@@ -4,5 +4,6 @@
   "version": "3.0.24",
   "installedAt": 1782539966679,
   "source": "skillhub",
-  "iconDownloadFailedAt": 1789111476377
+  "iconDownloadFailedAt": 1789111476377,
+  "installedContentHash": "sha256:8db704fc67cfc8d49cc376b5578b1c7ee88188934c86b16877a3a108bb50bbc9"
 }

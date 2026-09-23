@@ -100,16 +100,21 @@ _GROUP_SUFFIX_RE = re.compile(r'[第]?\d+组\s*$')
 
 
 def _resolve_pay_company(dept, company, pay_map):
-    """解析付款公司：精确匹配 → 剥离组号后缀再匹配 → 公司兜底。"""
+    """解析付款公司（严格两级 + 兜底），返回 (付款公司, 是否命中参考表)：
+
+    1. 精确匹配参考表 pay_map（权威依据）
+    2. 剥离 "N组"/"第N组" 后缀后再精确匹配
+    3. 仍未命中 → 公司级兜底，hit=False，供汇总"待人工确认"清单
+    """
     # 1) 精确匹配
     if dept in pay_map and pay_map[dept]:
-        return pay_map[dept]
+        return pay_map[dept], True
     # 2) 剥离 "1组"/"2组"/"第1组" 等后缀，用基础部门名再查
     base = _GROUP_SUFFIX_RE.sub('', dept).strip()
     if base and base in pay_map and pay_map[base]:
-        return pay_map[base]
-    # 3) 公司级兜底
-    return PAY_FALLBACK.get(company, '')
+        return pay_map[base], True
+    # 3) 公司级兜底（未在参考表命中）
+    return PAY_FALLBACK.get(company, ''), False
 
 
 def fill_info(df, card_map, pay_map):
@@ -121,6 +126,7 @@ def fill_info(df, card_map, pay_map):
 
     unmatched_card = []
     unmatched_pay = []
+    pending_confirm = {}   # 未在参考表命中的部门: {部门: (公司, 兜底付款公司)}
 
     for i, r in df.iterrows():
         emp = str(r['内部员工姓名']).strip()
@@ -130,7 +136,10 @@ def fill_info(df, card_map, pay_map):
             df.at[i, '姓名'] = emp
             df.at[i, '银行卡号'] = card_map[emp][0]
             df.at[i, '开户行'] = card_map[emp][1]
-        df.at[i, '内部带单费付款公司'] = _resolve_pay_company(dept, company, pay_map)
+        pay_company, hit = _resolve_pay_company(dept, company, pay_map)
+        df.at[i, '内部带单费付款公司'] = pay_company
+        if not hit:
+            pending_confirm[dept] = (company, pay_company)
 
         status = 'OK' if (df.at[i, '银行卡号'] and df.at[i, '银行卡号'] != 'nan') else '未匹配'
         pay = df.at[i, '内部带单费付款公司']
@@ -144,6 +153,15 @@ def fill_info(df, card_map, pay_map):
         print(f"\n⚠️ 未匹配银行卡号: {unmatched_card}")
     if unmatched_pay:
         print(f"\n⚠️ 未匹配付款公司: {unmatched_pay}")
+
+    # 未在参考表命中的部门：已按公司兜底，需人工确认
+    if pending_confirm:
+        print(f"\n{'='*64}")
+        print(f"⚠️ 以下 {len(pending_confirm)} 个部门在参考表(内部带单费付款公司汇总表)未命中，")
+        print(f"   已按公司兜底填入付款公司 —— 请确认是否正确：")
+        for d, (c, p) in pending_confirm.items():
+            print(f"   - 部门: {d} | 公司: {c} | 已填付款公司: {p}")
+        print(f"{'='*64}")
     return df, unmatched_card
 
 

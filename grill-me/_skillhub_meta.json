@@ -16,5 +16,6 @@
   ],
   "description_zh": "深度追问式方案审查：逐层拆解设计决策，直到达成共识",
   "description_en": "Relentless interview to stress-test your plan, resolving each decision branch one by one",
-  "iconSource": "letter:auto"
+  "iconSource": "letter:auto",
+  "installedContentHash": "sha256:bdca0d7999e38cfbefd14daa32fd1655247bd02713f99791edbcb5b2418e6ef1"
 }

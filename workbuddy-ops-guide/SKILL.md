@@ -1,7 +1,7 @@
 ---
 name: workbuddy-ops-guide
 description: WorkBuddy 实操踩坑速查与操作指南（通用版，不含任何特定公司/平台/品牌信息）。当用户遇到或提到：命令不可用/command not found、文件被占用 PermissionError、反引号被吞、openpyxl 读不到数据、read_only、样式丢失、docx/xlsx 生成、生成报告或表格、敏感词脱敏、对外发文件、脱敏扫描扫不出词、Office 文件检查、CRM 或业务系统连接器、对象字段查询、skill 开发与安装、SKILL.md 写法、双机同步、Git 中转、写记忆、交付前检查、回读校验，以及任何"又踩坑了/为什么不行/怎么做才对"的场景时使用。开工前读铁律，交付前读验收清单。
-version: 1.2.0
+version: 1.3.0
 agent_created: true
 ---
 

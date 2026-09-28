@@ -52,28 +52,19 @@ ORG_PRICEBOOKS = {
     "能率": "能率价目表20250701", "云格": "云格20220801604864",
     "美的": "美的价目表20250901", "约克": "约克价目表20250301",
     "欣暖家": "美的价目表20250901",
-    "天猫": "天猫价目表20260901",
-    # 「芯猫」是「天猫」的口语说法，同一个组织，映射到同一张价目表
-    "芯猫": "天猫价目表20260901",
 }
 PRICEBOOKS = ORG_PRICEBOOKS  # 向后兼容旧名
 
 FIELD_VARIANTS = {
-    "model": ["产品官方名称及型号", "产品", "型号规格", "规格型号", "型号标题",
-              "物料名称", "商品名称"],
-    "price": ["零售建议价", "零售价", "价目表售价", "销售指导价", "指导价", "面价"],
-    # 「销售限价」= 导入模板的「品牌负责人审核价」列。
-    # 2026-09-28 天猫库存物料价目表实测：源表列名写作「销售限价」，此前只认「销售限制价」，
-    # 而「限价」是 2 字短词被 SHORT_KW 挡住只认整格相等 → 整列被漏掉，限价全空。
-    "limit": ["零售限制价", "销售限制价", "销售限价", "（浮动下限价）品牌负责人审核价",
-              "品牌负责人审核价", "限价"],
-    "settle": ["销售结算价", "结算价", "核算价", "底价"],
-    "cost": ["实际成本价", "成本价", "云仓底价", "供 价", "供价", "供货价"],
+    "model": ["产品官方名称及型号", "产品（必填）", "产品", "型号规格"],
+    "price": ["零售建议价", "零售价", "价目表售价"],
+    "limit": ["零售限制价", "销售限制价", "（浮动下限价）品牌负责人审核价", "品牌负责人审核价"],
+    "settle": ["销售结算价"],
+    "cost": ["实际成本价", "成本价"],
     "note": ["备注"],
     "brand": ["品牌"],
-    # 品类列名变体：金蝶供货价表用「品类」，快照用「产品品相」，主数据导出用「产品大类」
-    "pclass": ["产品大类", "品类", "大类"],
-    "pitem": ["产品品项", "品项", "产品品相"],
+    "pclass": ["产品大类"],
+    "pitem": ["产品品项"],
 }
 
 # 分类关键词表: 关键词 -> (西门子: 大类列/品项列, 通用: 大类列/品项列)
@@ -130,11 +121,7 @@ BRAND_KEYWORDS = ["AO史密斯", "A.O.史密斯", "史密斯", "COLMO", "卡萨�
                   "东芝", "索尼", "松下", "长虹", "容声", "博世",
                   "西门子", "小天鹅", "美的", "格力", "大金", "方太", "创维", "TCL",
                   "石头", "林内", "菲斯曼", "能率", "约克", "怡口", "海尔", "海信",
-                  "老板", "华帝", "云格", "启欣",
-                  # 2026-09-28 天猫库存物料价目表新增（长词在前，短词在后）
-                  "xReal", "万家乐", "易开得", "凯迪仕", "博乐宝", "奥克斯", "苏泊尔",
-                  "弗迪沃斯", "火星人", "瑞尔特", "樱花", "美菱", "奥普", "三星", "九阳", "沁园",
-                  "云米", "华生", "康宝", "百得", "统帅", "夸克"]
+                  "老板", "华帝", "云格", "启欣"]
 
 
 def guess_brand_from_model(model):
@@ -142,28 +129,6 @@ def guess_brand_from_model(model):
         if b in model:
             return b
     return None
-
-
-def resolve_brand(src_brand, model):
-    """品牌 = 产品的**实际品牌**，与「组织」无关。
-
-    源表品牌列 → 型号名推断；**两样都推不出来就返回空串，绝不回退成组织名**
-    （组织只决定「价目表（必填）」列）。品牌列常见三种写法：
-      「Ronshen/容声」→ 取中文段 容声
-      「TCL」        → 没有中文名，原样使用
-      「Siemens」    → 纯英文，先用型号推断中文名，推不出来才原样使用
-    """
-    raw = (src_brand or "").strip()
-    if raw:
-        if "/" in raw:
-            zh = [s.strip() for s in raw.split("/")
-                  if s.strip() and re.search(r"[\u4e00-\u9fa5]", s)]
-            if zh:
-                return zh[-1]
-        if re.search(r"[\u4e00-\u9fa5]", raw):
-            return raw
-        return guess_brand_from_model(model) or raw
-    return guess_brand_from_model(model) or ""
 
 
 def open_wb(path, data_only=True):
@@ -196,107 +161,20 @@ def parse_yymmdd(name):
     return None
 
 
-# ---------------- 表头语义识别（按语义，不按固定行号 / 列字母） ----------------
-# 源表格式不固定：表头可能在 R1 也可能是 R2，列名怎么叫、加列后整体右移都遇过。
-# 一律扫前 HEADER_SCAN 行，按语义命中情况定位表头行。
-HEADER_SEMANTICS = {
-    "model":  ["产品官方名称及型号", "产品", "型号规格", "规格型号", "型号标题",
-               "物料名称", "商品名称", "货品名称"],
-    "price":  ["零售建议价", "零售价", "价目表售价", "销售指导价"],
-    "limit":  ["零售限制价", "销售限制价", "品牌负责人审核价", "限价"],
-    "settle": ["销售结算价", "结算价", "底价"],
-    "cost":   ["实际成本价", "成本价", "云仓底价"],
-    "note":   ["备注"],
-    "brand":  ["品牌", "品牌系"],
-    "pclass": ["产品大类", "大类"],
-    "pitem":  ["产品品项", "品项"],
-}
-HEADER_SCAN = 8   # 表头候选扫描行数
-SHORT_KW = 2      # 长度 ≤ 该值的词只允许整格相等，避免「产品」误命中「产品大类」
-
-
-def norm_header(cell):
-    """表头归一化：去首尾空白 + 去掉括号段（（必填）、（单列）、【…】…）。"""
-    s = "" if cell is None else str(cell)
-    s = re.sub(r"[（(【\[][^）)】\]]*[）)】\]]", "", s)
-    return s.strip()
-
-
-def header_hit(cell, kw):
-    c = norm_header(cell)
-    if not c:
-        return False
-    if c == kw:
-        return True
-    return len(kw) > SHORT_KW and kw in c
-
-
-def row_semantics(row):
-    """返回该行命中的语义集合。"""
-    cells = [c for c in (row or []) if c is not None and str(c).strip() != ""]
-    hits = set()
-    for concept, kws in HEADER_SEMANTICS.items():
-        for c in cells:
-            if any(header_hit(c, kw) for kw in kws):
-                hits.add(concept)
-                break
-    return hits
-
-
-def find_header_row(ws, scan=HEADER_SCAN):
-    """语义扫描前 scan 行，返回 (表头行号, 数据起始行号, 表头list)。
-    表头行 = 命中语义数最多、且至少命中型号类或价格类的那一行。"""
-    rows = []
-    for row in ws.iter_rows(min_row=1, max_row=scan, values_only=True):
-        rows.append(list(row))
-    best, best_n = None, 0
-    for i, r in enumerate(rows, start=1):
-        hits = row_semantics(r)
-        if len(hits) > best_n and ({"model", "price"} & hits):
-            best, best_n = i, len(hits)
-    if best is None:
-        preview = " | ".join(str(x) for x in (rows[0] if rows else [])[:8] if x is not None)
-        raise ValueError(
-            "表头语义识别失败：前 %d 行找不到型号类或价格类列，不猜列。第 1 行预览：%s"
-            % (scan, preview[:120]))
-    return best, best + 1, rows[best - 1]
-
-
-def _sheet_probe(ws):
-    """返回 (是否有表头语义, 前两行是否非空)。"""
-    probe = []
-    for row in ws.iter_rows(min_row=1, max_row=HEADER_SCAN, values_only=True):
-        probe.append(list(row))
-    strong = any(row_semantics(r) for r in probe[:HEADER_SCAN])
-    weak = any(any(c is not None and str(c).strip() != "" for c in r) for r in probe[:2])
-    return strong, weak
-
-
 def find_data_sheet(wb):
-    """定位数据 sheet：跳过 hidden 开头的表；
-    **优先取「前 8 行里有表头语义」的表**（R1 全空但真表头在 R2 也算），
-    没有语义候选才退回「前两行非空」的旧判据。
-    「Sheet1/Sheet2」名不硬跳——真数据也可能装在这种名字的 sheet 里
-    （实测「泽锋新增 (17).xlsx」整个文件只有一个 Sheet1 且装着价目数据）；
-    只有「SheetN 名 + 无表头语义」才按空壳诱饵排除，不进 weak 池。
-    多张候选时：6 位日期名（YYMMDD）取日期最大的，否则取最右的。
+    """定位数据 sheet：跳过 hidden 开头与 Sheet1 的表及空表后，
+    若存在 6 位日期名（YYMMDD）的表则取日期最大的，否则取最右的。
     返回 (sheet, 名字) 或 (None, None)。"""
-    strong, weak = [], []
+    cands = []
     for sn in wb.sheetnames:
-        if sn.lower().startswith("hidden"):
+        if sn.lower().startswith("hidden") or sn == "Sheet1":
             continue
         ws = wb[sn]
-        is_strong, is_weak = _sheet_probe(ws)
-        if is_strong:
-            strong.append((sn, ws))
-        elif is_weak and not re.fullmatch(r"[Ss]heet\d+", sn):
-            weak.append((sn, ws))
-    # 语义候选里优先用非 SheetN 名字的（SheetN 名只在没得选时才用），
-    # 避免多 sheet 工作簿里 Sheet2 复制品/草稿抢走真数据表
-    named_strong = [(sn, ws) for sn, ws in strong if not re.fullmatch(r"[Ss]heet\d+", sn)]
-    if named_strong:
-        strong = named_strong
-    cands = strong or weak
+        first = None
+        for row in ws.iter_rows(min_row=1, max_row=1, values_only=True):
+            first = row[0] if row else None
+        if first is not None and str(first).strip() != "":
+            cands.append((sn, ws))
     if not cands:
         return None, None
     dated = [(parse_yymmdd(sn), sn, ws) for sn, ws in cands]
@@ -310,54 +188,37 @@ def find_data_sheet(wb):
 
 
 def detect_format_and_rows(ws):
-    """返回 (格式, 表头行号, 数据起始行号, 表头list)。
-    格式只作参考标签，判断逻辑与列定位都走语义：
-    apply（申请表）/ template（导入模板）/ generic（其他，如货品表、主推表）。"""
-    hdr_row, data_row, hdr = find_header_row(ws)
-    first_cell = ""
-    for row in ws.iter_rows(min_row=1, max_row=1, values_only=True):
-        first_cell = str(row[0]) if row and row[0] is not None else ""
-        break
+    """返回 (格式, 表头行号, 数据起始行号, 表头list)。格式: apply/template。"""
+    rows = []
+    for row in ws.iter_rows(min_row=1, max_row=5, values_only=True):
+        rows.append(list(row))
+    first_cell = str(rows[0][0]) if rows and rows[0] else ""
     if "申请表" in first_cell:
-        fmt = "apply"
-    elif "唯一性ID" in first_cell or any("唯一性ID" in norm_header(h) for h in (hdr or [])):
-        fmt = "template"
-    else:
-        fmt = "generic"
-    return fmt, hdr_row, data_row, hdr
+        hdr = None
+        for i, r in enumerate(rows, start=1):
+            if r and any("产品官方名称及型号" == str(c) for c in r if c):
+                hdr = r
+                return ("apply", i, i + 1, hdr)
+        raise ValueError("申请表格式但找不到表头行（应含『产品官方名称及型号』）")
+    if "唯一性ID" in first_cell:
+        return ("template", 1, 2, rows[0])
+    raise ValueError("无法识别源表格式：R1 首格=『%s』" % first_cell[:30])
 
 
-def detect_org(ws, hdr_row=1):
-    """在表头行之前（含表头行）扫描「申请部门：X」类单元格，返回组织文本，没有则 None。"""
-    for row in ws.iter_rows(min_row=1, max_row=max(hdr_row, 1), values_only=True):
-        for c in (row or []):
-            if c is None:
-                continue
-            m = re.search(r"申请部门\s*[:：]\s*(\S+)", str(c))
-            if m:
-                return m.group(1).strip() or None
+def detect_brand(ws, fmt):
+    """返回申请表 R2 的部门文本（去前缀），模板格式或空返回 None。"""
+    if fmt == "apply":
+        for row in ws.iter_rows(min_row=2, max_row=2, values_only=True):
+            text = str(row[0]) if row and row[0] else ""
+            text = text.replace("申请部门：", "").replace("申请部门:", "").strip()
+            return text or None
     return None
 
 
-def detect_brand(ws, fmt, hdr_row=None):
-    """兼容旧入口：源表里声明的组织/部门文本（识别不到返回 None，由用户明示兜底）。"""
-    return detect_org(ws, hdr_row if hdr_row else (3 if fmt == "apply" else 1))
-
-
 def col_index(hdr, concept):
-    """按语义取列号：先精确（归一化后相等），再退化为「包含」（仅长词）。
-    不按列字母，允许列名带（必填）/（单列）等修饰。"""
-    names = FIELD_VARIANTS.get(concept, [])
-    for name in names:
+    for name in FIELD_VARIANTS.get(concept, []):
         for i, h in enumerate(hdr):
-            if norm_header(h) == name:
-                return i
-    for name in names:
-        if len(name) <= SHORT_KW:
-            continue
-        for i, h in enumerate(hdr):
-            c = norm_header(h)
-            if c and name in c:
+            if h is not None and str(h).strip() == name:
                 return i
     return None
 
@@ -397,7 +258,7 @@ def load_source_rows(path, brand_hint=None):
     if ws is None:
         raise ValueError("源表里找不到数据 sheet（全是 hidden/空表）")
     fmt, hdr_row, data_row, hdr = detect_format_and_rows(ws)
-    brand = brand_hint or detect_brand(ws, fmt, hdr_row)
+    brand = brand_hint or detect_brand(ws, fmt)
     idx = {k: col_index(hdr, k) for k in FIELD_VARIANTS}
     rows = []
     for r in ws.iter_rows(min_row=data_row, max_row=ws.max_row, values_only=True):
@@ -425,13 +286,7 @@ def load_source_rows(path, brand_hint=None):
 def classify(model, brand, src_pclass, src_pitem):
     """返回 (产品大类, 产品品项, matched)。乾鑫读源表；大金固定；欣暖家留空。"""
     if brand == "乾鑫":
-        if src_pclass or src_pitem:
-            return src_pclass, src_pitem, True
-        # 源表没有大类/品项列 → 按通用关键词表从型号推（如型号里含「多联/风管机/空调」）
-        for kw, si, gen in KEYWORDS:
-            if kw in model:
-                return gen[0], gen[1], True
-        return "", "", True          # 推不出仍算乾鑫已处理，留空交用户补
+        return src_pclass, src_pitem, True
     if brand == "大金":
         return "空调", "空调", True
     if brand == "欣暖家":
@@ -480,17 +335,8 @@ def load_products(path):
     for row in ws.iter_rows(min_row=1, max_row=1, values_only=True):
         hdr = list(row)
     want = {"name": "产品名称（必填）", "mat": "物料名称", "spec": "型号规格",
-            "code": "物料编号", "pclass": "产品大类", "pitem": "产品品相",
-            # 唯一性ID = 该产品在纷享销客里的记录 ID。实测与金蝶物料表的「销客产品编码」
-            # 逐行一致 1103/1104（2026-09-22 交叉验证），是物料表未覆盖时的正确回填源。
-            "uid": "唯一性ID（必填）", "pcode": "产品编码"}
-    hs = [str(h) for h in hdr]
-    ix = {k: (hs.index(v) if v in hs else None) for k, v in want.items()}
-    if ix["uid"] is None:                    # 表头后缀不同时按语义兜底
-        for i, h in enumerate(hs):
-            if "唯一性ID" in norm_header(h):
-                ix["uid"] = i
-                break
+            "code": "物料编号", "pclass": "产品大类", "pitem": "产品品相"}
+    ix = {k: (hdr.index(v) if v in [str(h) for h in hdr] else None) for k, v in want.items()}
     out = []
     for r in ws.iter_rows(min_row=2, max_row=ws.max_row, values_only=True):
         def g(k):
@@ -499,8 +345,7 @@ def load_products(path):
         if ix["name"] is None or not g("name"):
             continue
         out.append({"name": g("name"), "mat": g("mat"), "spec": g("spec"),
-                    "code": g("code"), "pclass": g("pclass"), "pitem": g("pitem"),
-                    "uid": g("uid"), "pcode": g("pcode")})
+                    "code": g("code"), "pclass": g("pclass"), "pitem": g("pitem")})
     wb.close()
     return out
 
@@ -676,9 +521,8 @@ def main():
     n_pending = n_dup = 0
     for src in rows:
         # 品牌 = 产品实际品牌，与组织无关：
-        #   源表品牌列优先（含「英文/中文」写法）→ 其次从型号名推断 → **推不出来留空进核对清单**
-        #   绝不回退成组织名：组织只决定「价目表（必填）」列。
-        row_brand = resolve_brand(src["src_brand"], src["model"])
+        #   源表品牌列优先（乾鑫源表带此列）→ 其次从型号名推断 → 最后回退到组织名
+        row_brand = src["src_brand"] or guess_brand_from_model(src["model"]) or org
         # 价目表严格按组织(org)走：同一张价目表内可含多个品牌（如乾鑫价目表里有大金/美的）
         pb = ORG_PRICEBOOKS.get(org, "")
         sysname, how = (match_product(src["model"], products) if products else (src["model"], "无快照直填"))
@@ -695,15 +539,6 @@ def main():
             continue
         # 分类特例按「组织」判断（乾鑫读源表列、西门子交叉、大金固定、欣暖家留空）
         pclass, pitem, matched = classify(src["model"], org, src["src_pclass"], src["src_pitem"])
-        if not row_brand:
-            warns.append({"源表型号": src["model"], "品牌": "",
-                          "状态": "品牌未识别",
-                          "建议": "源表品牌列没写、型号里也推不出品牌；请人工补产品实际品牌（不要填组织名）"})
-        elif pclass == "" and pitem == "" and org != "欣暖家":
-            # 选项表里可能没有这个品类（如电视/洗衣机/干衣机），不硬塞近义词，交用户拍板
-            warns.append({"源表型号": src["model"], "品牌": row_brand,
-                          "状态": "分类未填（选项表可能没有该品类）",
-                          "建议": "确认要不要给产品大类/产品品项新增选项；无对应选项就保持留空"})
         if not matched and org not in ("欣暖家", "大金", "乾鑫"):
             w2 = {"源表型号": src["model"], "品牌": row_brand, "状态": "分类未匹配",
                   "建议": "请人工确认产品大类/产品品项后补填"}

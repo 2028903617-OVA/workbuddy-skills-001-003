@@ -33,14 +33,10 @@ except ImportError:  # pragma: no cover
     print(json.dumps({"error": "openpyxl 未安装"}, ensure_ascii=False))
     sys.exit(2)
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build_import import BRAND_KEYWORDS  # noqa: E402
-
 # ---------------------------------------------------------------- 常量
-# 品牌名单只维护一份，能力 3 直接复用能力 1 的词表。
-# 此前这里另存了一份 16 个品牌的清单，漏掉大金等 38 个品牌，
-# 后果是产品快照里的大金产品全部进不了样本库、大金型号推断不出品项（物料名整列空白且不报错）。
-BRANDS = sorted(set(BRAND_KEYWORDS) | {"添可"}, key=len, reverse=True)
+BRANDS = sorted(["卡萨帝", "COLMO", "西门子", "美的", "海信", "创维", "小天鹅", "东芝",
+                 "海尔", "科沃斯", "容声", "方太", "格力", "添可", "老板", "TCL"],
+                key=len, reverse=True)
 
 IND_KEY = {
     "冰箱": ["冰箱", "冰吧", "酒柜", "冰柜"],
@@ -147,17 +143,11 @@ def build_lib(products, extra_names=None):
 
 
 # ---------------------------------------------------------------- 清洗
-def clean_model(e, industry=None, brand=None):
+def clean_model(e, industry=None):
     """E 列 -> 规格型号 F（通用，非电视）"""
     s = str(e or "").replace("&nbsp;", " ").replace("\xa0", " ").strip()
     s = re.sub(r"^\s*【新品】\s*", "", s)
     s = BRAND_PREFIX.sub("", s)
-    # 型号里自带品牌名但没有「英文/中文」分隔符时（如「大金FFDP90BA」），BRAND_PREFIX 够不着，
-    # 按品牌列再剥一次。不剥的话 compose_g 会以为型号已带品牌而省掉品牌前缀，
-    # 把品项顶到最前面，拼出「内机大金FFDP90BA」这种错误顺序。
-    b = str(brand or "").strip()
-    if b and s.startswith(b) and len(s) > len(b):
-        s = s[len(b):].strip()
     s = re.sub(r"^\s*【新品】\s*", "", s)
     for pat in PROMO:
         s = re.sub(pat, "", s)
@@ -285,7 +275,7 @@ def process_rows(rows, lib):
             item = "激光电视" if "激光电视" in str(r["E"]) else "平板电视"
             conf, src = 0.75, "电视规则"
         else:
-            spec = clean_model(r["E"], industry, r.get("brand"))
+            spec = clean_model(r["E"], industry)
             item, conf, src = guess_item(r["brand"], primary_code(spec), industry, lib)
             item = fix_item(item, industry, primary_code(spec), r["brand"])
         if not spec:
@@ -295,125 +285,20 @@ def process_rows(rows, lib):
     return out
 
 
-# ---------------------------------------------------------------- 列定位（按表头语义，不写死列字母）
-# 源表格式每次都可能不同：表名、表头行、列名、有没有预留输出列都会变。
-# 一律按语义定位；结果列定位不到就追加新列，绝不动原有列。
-COL_SEMANTICS = {
-    "model":    ["型号标题", "商品名称", "货品名称", "产品官方名称及型号", "型号"],
-    "short":    ["型号简称", "简称"],
-    "brand":    ["品牌", "品牌系"],
-    "industry": ["行业", "品类", "产品大类", "大类"],
-    "spec":     ["规格型号", "规格"],
-    "material": ["物料名称", "金蝶物料名", "内部物料名称", "我方物料名称"],
-}
-SHORT_KW = 2          # 长度 ≤ 该值的词只允许整格相等，避免「产品」误命中「产品大类」
-SHEET_HINTS = ("货品", "主推", "规划", "物料", "新增", "商品", "型号", "价目")
-
-
-def norm_cell(v):
-    """表头归一化：去首尾空白 + 去掉括号段（（必填）、（单列）、【…】…）。"""
-    s = "" if v is None else str(v)
-    s = re.sub(r"[（(【\[][^）)】\]]*[）)】\]]", "", s)
-    return s.strip()
-
-
-def _hit(cell, kw):
-    c = norm_cell(cell)
-    if not c:
-        return False
-    if c == kw:
-        return True
-    return len(kw) > SHORT_KW and kw in c
-
-
-def header_of(ws, r):
-    return [ws.cell(row=r, column=c).value for c in range(1, ws.max_column + 1)]
-
-
-def row_hits(row):
-    hits = set()
-    for key, kws in COL_SEMANTICS.items():
-        for c in row:
-            if any(_hit(c, kw) for kw in kws):
-                hits.add(key)
-                break
-    return hits
-
-
-def find_header_row(ws, scan=8):
-    """表头行 = 前 scan 行里命中语义数最多、且含型号类列的那一行。"""
-    best, best_n = 1, -1
-    for r in range(1, min(scan, ws.max_row) + 1):
-        h = row_hits(header_of(ws, r))
-        if len(h) > best_n and "model" in h:
-            best, best_n = r, len(h)
-    return best
-
-
-def sheet_candidates(wb):
-    """有表头语义的 sheet。跳过 hidden；
-    SheetN 名不硬跳（真数据也可能装在唯一一个 Sheet1 里，实测踩过），
-    但排在非 SheetN 名候选之后——只在没得选时才用。"""
-    named, sheetn = [], []
-    for sn in wb.sheetnames:
-        if sn.lower().startswith("hidden"):
-            continue
-        if "model" in row_hits(header_of(wb[sn], find_header_row(wb[sn]))):
-            (sheetn if re.fullmatch(r"[Ss]heet\d+", sn) else named).append(sn)
-    return named or sheetn
-
-
-def pick_sheet(wb):
-    cands = sheet_candidates(wb)
-    if not cands:
-        return None
-    hinted = [s for s in cands if any(h in s for h in SHEET_HINTS)]
-    return (hinted or cands)[-1]
-
-
-def _find_col(hdr, kws):
-    for kw in kws:                                   # 一轮：整格相等
-        for i, c in enumerate(hdr, start=1):
-            if norm_cell(c) == kw:
-                return i
-    for kw in kws:                                   # 二轮：包含（仅长词）
-        if len(kw) <= SHORT_KW:
-            continue
-        for i, c in enumerate(hdr, start=1):
-            nc = norm_cell(c)
-            if nc and kw in nc:
-                return i
-    return None
-
-
-def resolve_columns(ws, hdr_row, args):
-    """返回 (列位置 dict, 需要追加的列名 list)。显式 --col-* 优先于语义定位。"""
-    hdr = header_of(ws, hdr_row)
-    explicit = {"brand": args.col_brand, "industry": args.col_industry,
-                "model": args.col_model, "spec": args.col_f, "material": args.col_g}
-    cols = {}
-    for key, kws in COL_SEMANTICS.items():
-        cols[key] = explicit.get(key) or _find_col(hdr, kws)
-    appended = [k for k in ("spec", "material") if not cols.get(k)]
-    return cols, appended
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--source", required=True)
-    ap.add_argument("--sheet", default=None,
-                    help="不传则按 sheet 名线索 + 表头语义自动选择，并在摘要里回报所选 sheet")
-    ap.add_argument("--col-brand", type=int, default=None)
-    ap.add_argument("--col-industry", type=int, default=None)
-    ap.add_argument("--col-model", type=int, default=None,
-                    help="对方型号标题列（不传则按表头语义自动定位）")
-    ap.add_argument("--col-f", type=int, default=None, help="规格型号输出列（不传则自动定位或追加）")
-    ap.add_argument("--col-g", type=int, default=None, help="物料名称输出列（不传则自动定位或追加）")
-    ap.add_argument("--header-row", type=int, default=None, help="不传则自动识别表头行")
+    ap.add_argument("--sheet", required=True)
+    ap.add_argument("--col-brand", type=int, default=1)
+    ap.add_argument("--col-industry", type=int, default=3)
+    ap.add_argument("--col-model", type=int, default=5, help="E 列（对方型号标题）")
+    ap.add_argument("--col-f", type=int, default=6)
+    ap.add_argument("--col-g", type=int, default=7)
+    ap.add_argument("--header-row", type=int, default=1)
     ap.add_argument("--product-snapshot", default=None)
     ap.add_argument("--downloads", default=r"D:\Backup\Downloads")
     ap.add_argument("--extra-sample-sheet", default=None)
-    ap.add_argument("--extra-sample-col", type=int, default=None)
+    ap.add_argument("--extra-sample-col", type=int, default=5)
     ap.add_argument("--outdir", default=None)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
@@ -423,41 +308,11 @@ def main():
         sys.exit(2)
 
     wb = openpyxl.load_workbook(args.source, data_only=True)
-    sheet_name = args.sheet or pick_sheet(wb)
-    if sheet_name is None or sheet_name not in wb.sheetnames:
-        print(json.dumps({"error": "定位不到数据 sheet（现有: %s），请用 --sheet 指定"
-                          % wb.sheetnames}, ensure_ascii=False))
+    if args.sheet not in wb.sheetnames:
+        print(json.dumps({"error": "找不到 sheet: %s（现有: %s）"
+                          % (args.sheet, wb.sheetnames)}, ensure_ascii=False))
         sys.exit(2)
-    ws = wb[sheet_name]
-
-    hdr_row = args.header_row or find_header_row(ws)
-    cols, appended = resolve_columns(ws, hdr_row, args)
-
-    if not cols.get("model"):
-        # 不猜解析源：金蝶供货价表这类已经规范化的内部表（只有 物料名称+规格型号，两列都正确）
-        # 拿「物料名称」当解析源会把整串物料名写进规格型号列，实测 295 行被改坏。
-        # 能力 3 的输入是**对方型号标题清单**，没有型号类列就说明不是这类输入，停下来问清楚。
-        names = ", ".join(str(ws.cell(hdr_row, c).value) for c in
-                          range(1, min(ws.max_column, 12) + 1)
-                          if ws.cell(hdr_row, c).value is not None)
-        print(json.dumps({"error": "定位不到「型号标题」类列，无法生成物料名。"
-                                   "能力3 的输入是对方型号标题清单；"
-                                   "若本表已有规范的物料名称/规格型号列，请直接用，不必生成。"
-                                   "确要指定解析列请用 --col-model <列号>。"
-                                   "表头行第 %d 行的列名：%s" % (hdr_row, names)},
-                         ensure_ascii=False))
-        sys.exit(2)
-    # 输出列若不存在则追加（结果写在新列，不动原有列）
-    out_f, out_g = cols.get("spec"), cols.get("material")
-    next_col = ws.max_column
-    if out_f is None:
-        next_col += 1
-        ws.cell(row=hdr_row, column=next_col).value = "规格型号"
-        out_f = next_col
-    if out_g is None:
-        next_col += 1
-        ws.cell(row=hdr_row, column=next_col).value = "物料名称"
-        out_g = next_col
+    ws = wb[args.sheet]
 
     # 样本库
     snap = args.product_snapshot
@@ -468,27 +323,22 @@ def main():
     products = load_products(snap) if snap else []
     extra = []
     if args.extra_sample_sheet and args.extra_sample_sheet in wb.sheetnames:
-        ex_col = args.extra_sample_col or cols.get("material") or cols["model"]
-        for r in wb[args.extra_sample_sheet].iter_rows(min_row=hdr_row + 1, values_only=True):
-            v = r[ex_col - 1] if len(r) >= ex_col else None
+        ws2 = wb[args.extra_sample_sheet]
+        for r in ws2.iter_rows(min_row=args.header_row + 1, values_only=True):
+            v = r[args.extra_sample_col - 1] if len(r) >= args.extra_sample_col else None
             if v:
                 extra.append(str(v))
     lib = build_lib(products, extra)
 
-    def cell(ridx, key):
-        ci = cols.get(key)
-        return ws.cell(row=ridx, column=ci).value if ci else None
-
     rows = []
-    for ridx in range(hdr_row + 1, ws.max_row + 1):
-        e = cell(ridx, "model")
-        d = cell(ridx, "short")
+    for ridx in range(args.header_row + 1, ws.max_row + 1):
+        e = ws.cell(row=ridx, column=args.col_model).value
+        d = ws.cell(row=ridx, column=args.col_model - 1).value
         if not str(e or "").strip() and not str(d or "").strip():
             continue
-        raw_brand = str(cell(ridx, "brand") or "")
         rows.append({"row": ridx,
-                     "brand": raw_brand.split("/")[-1].strip(),
-                     "industry": str(cell(ridx, "industry") or "").strip(),
+                     "brand": str(ws.cell(row=ridx, column=args.col_brand).value or "").split("/")[-1].strip(),
+                     "industry": str(ws.cell(row=ridx, column=args.col_industry).value or "").strip(),
                      "E": str(e or "")})
     res = process_rows(rows, lib)
 
@@ -500,22 +350,17 @@ def main():
 
     if not args.dry_run:
         for r in res:
-            # 空值不覆盖：生成失败时保留源表已有内容（解析源可能就是输出列本身，
-            # 拿空结果盖掉原有正确物料名是破坏性操作）
-            if r["F"]:
-                ws.cell(row=r["row"], column=out_f).value = r["F"]
-            if r["G"]:
-                ws.cell(row=r["row"], column=out_g).value = r["G"]
+            ws.cell(row=r["row"], column=args.col_f).value = r["F"]
+            ws.cell(row=r["row"], column=args.col_g).value = r["G"]
         base = os.path.splitext(os.path.basename(args.source))[0]
-        p1 = os.path.join(outdir, "%s_已补规格型号与物料名_%s.xlsx" % (base, today))
+        p1 = os.path.join(outdir, "%s_已补FG_%s.xlsx" % (base, today))
         wb.save(p1)
 
         wb2 = openpyxl.Workbook()
         ws2 = wb2.active
         ws2.title = "待确认清单"
         ws2.append(["低置信(置信<0.7)共 %d 行，请人工复核品项" % n_low])
-        ws2.append(["行号", "品牌", "行业", "对方型号标题", "规格型号", "我方物料名称",
-                    "品项", "来源", "置信"])
+        ws2.append(["行号", "品牌", "行业", "E列型号标题", "F规格型号", "G物料名称", "品项", "来源", "置信"])
         for r in res:
             if r["conf"] < 0.7:
                 ws2.append([r["row"], r["brand"], r["industry"], r["E"], r["F"], r["G"],
@@ -532,12 +377,9 @@ def main():
         p1 = p2 = "(dry-run 未写文件)"
 
     print(json.dumps({
-        "sheet": sheet_name, "sheet_auto": args.sheet is None,
-        "表头行": hdr_row, "列位置": cols,
-        "追加列": appended,
-        "数据行": len(res),
+        "sheet": args.sheet, "数据行": len(res),
         "样本库": sum(len(v) for v in lib.values()), "品牌数": len(lib),
-        "两列有空值": n_empty, "低置信": n_low,
+        "F或G为空": n_empty, "低置信": n_low,
         "品项来源": dict(Counter(r["src"] for r in res).most_common()),
         "files": [p1, p2],
     }, ensure_ascii=False, indent=2))

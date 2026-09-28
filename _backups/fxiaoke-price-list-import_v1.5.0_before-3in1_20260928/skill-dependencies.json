@@ -87,25 +87,24 @@
         "official_home_url": "https://www.fxiaoke.com",
         "official_docs_url": "https://www.fxiaoke.com",
         "steps": [
-          "在 WorkBuddy 连接器管理页找到纷享销客连接器并启用、信任",
-          "先调 get-current-user 确认可用性，不要凭记忆判定连接器状态（2026-09-28 教训）",
-          "注意区分渠道：失效的是 fs-server 那条渠道（代理网关/SSE 直连/API 写三路 HTTP 400），另一条纷享销客连接器是可用的"
+          "在 WorkBuddy 连接器管理页找到 fs-server 并启用、信任",
+          "当前环境该 MCP 已知长期失效（HTTP 400），skill 默认使用本地快照，不依赖它"
         ],
-        "verify": "调用 get-current-user 能返回 ea / tenantId / employeeId 即为可用",
+        "verify": "MCP 工具 get-current-user 可正常返回用户身份",
         "security": "授权与凭据由 WorkBuddy 宿主管理，skill 不接触任何凭据",
-        "verified_at": "2026-09-28",
-        "applies_to_version": "纷享销客连接器（可选增强；仅在本地快照未命中时兜底，不是主数据源）"
+        "verified_at": "2026-09-12",
+        "applies_to_version": "fs-server MCP（可选增强）"
       },
       "degradation": [
         {
           "capability": "产品匹配",
-          "trigger": "连接器不可用 / 调用失败",
-          "fallback": "本地快照本就是主数据源，匹配与查重不受影响；失去的只是「快照未命中时的二次复核」，此时判「金蝶未同步」要在核对清单标注未经连接器复核",
+          "trigger": "MCP 调用失败（当前常态）",
+          "fallback": "改用本地最新有效导出快照做产品匹配与查重，逻辑不变",
           "user_input": "快照缺失时请用户提供导出文件或路径",
           "limitations": "快照日期之后的系统变更不覆盖，核对清单会标注快照日期",
           "evidence_label": "已验证",
-          "recovery": "连接器恢复后自动恢复兜底能力，无需改 skill 逻辑",
-          "stop_condition": "本地快照与连接器两个数据源都没有时才停止（无底表不做无依据匹配）"
+          "recovery": "MCP 恢复后可切换实时查询，无需改 skill 逻辑",
+          "stop_condition": "无（始终可用本地快照降级）"
         }
       ]
     }

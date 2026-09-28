@@ -53,6 +53,12 @@ wb = openpyxl.load_workbook(p, read_only=False)
 ```
 若必须用只读，加"只读不到 3+ 列表头 → 回退非 read_only"。
 
+**为什么只读到 1 列（看穿现象再动手）**：只读模式下 `ws.max_row / ws.max_column` 取自文件里的 `dimension` 记录。导出文件该记录常写成 `A1:A1`，于是 `max_column = 1`；而 `iter_rows(max_row=n)` **不显式传 `max_col` 时会默认用 `ws.max_column`**，结果即使你指定了行范围，每行也只返回第 1 列。表现为"标题行只有一列"，很容易误判成"表头不在第 1 行"或"文件结构变了"，白绕好几轮。
+
+✅ 排查动作：先打印 `ws.max_row, ws.max_column` 和首行原始值。若同为 1 且首行只有一个单元格，就是 `dimension` 坏了 → 回退非只读，或给 `iter_rows` 显式传 `max_col`。
+
+**只读模式下取数必须整行读**：`ws.cell(r, c)` 在只读模式里每次调用都会重新解析该行，逐格循环会退化到极慢（实测几十行的小表也能跑到几百秒被超时杀掉）。只读模式一律走 `iter_rows(values_only=True)` 一次拿整行，再用下标取列。
+
 ## 2.5 数组公式首字符被吃掉（B04）
 
 **现象**：写 `LOOKUP(1,0/(...))` 后 Excel 显示 `#NAME?`；解压看 XML 发现公式变成 `OOKUP(...)`。

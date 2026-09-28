@@ -123,44 +123,6 @@ eq(res[4]["G"], "卡萨帝燃气热水器JSLQ27-16CXE5UltraU1 博卡灰 天然�
 chk(all(r["F"] and r["G"] for r in res), "端到端 F/G 零空值",
     [r for r in res if not (r["F"] and r["G"])])
 
-# ---------------------------------------------------- 品牌名单与能力1 共用
-print("")
-print("== 品牌名单与能力1 共用一份 ==")
-chk(len(M.BRANDS) >= 50, "品牌名单不少于 50 个", len(M.BRANDS), ">=50")
-for b in ("大金", "樱花", "美菱", "松下", "添可"):
-    chk(b in M.BRANDS, "品牌名单含「%s」" % b)
-
-chk(M.parse_name("大金内机FFDP71EAP") == ("大金", "内机", "FFDP71EAP"),
-    "parse_name 能拆大金物料名", M.parse_name("大金内机FFDP71EAP"))
-
-_dk = M.build_lib([{"name": "大金内机FFDP90BAP"}, {"name": "大金内机FFDP80BA"},
-                   {"name": "大金主机RBCZQ8DBV"}])
-_item, _conf, _src = M.guess_item("大金", "FFDP90BA", None, _dk)
-chk(_item == "内机", "大金 FFDP90BA 借到品项「内机」", _item, "内机")
-chk(_conf >= 0.7, "大金 FFDP90BA 置信度达标", _conf, ">=0.7")
-chk(_dk.get("大金"), "大金样本能进样本库", _dk.get("大金"), "非空")
-
-# -------------------------------------- 型号里自带品牌名（无「/」分隔符）
-print("")
-print("== 型号自带品牌名要剥掉 ==")
-chk(M.clean_model("大金FFDP90BA", None, "大金") == "FFDP90BA",
-    "clean_model 剥掉型号里的品牌名", M.clean_model("大金FFDP90BA", None, "大金"), "FFDP90BA")
-chk(M.clean_model("大金 FFDP90BA", None, "大金") == "FFDP90BA",
-    "品牌名后带空格也能剥", M.clean_model("大金 FFDP90BA", None, "大金"), "FFDP90BA")
-chk(M.clean_model("FFDP90BA", None, "大金") == "FFDP90BA",
-    "型号不含品牌名时原样返回", M.clean_model("FFDP90BA", None, "大金"), "FFDP90BA")
-chk(M.clean_model("大金", None, "大金") == "大金",
-    "只剩品牌名时不剥成空", M.clean_model("大金", None, "大金"), "大金")
-chk(M.clean_model("Ronshen/容声 BCD-509P60FZBBX", None, "容声") == "BCD-509P60FZBBX",
-    "标准分隔符写法不受影响", M.clean_model("Ronshen/容声 BCD-509P60FZBBX", None, "容声"))
-
-_bp = M.process_rows(
-    [{"row": 2, "brand": "大金", "industry": None, "E": "大金FFDP90BA"}],
-    M.build_lib([{"name": "大金内机FFDP90BAP"}, {"name": "大金内机FFDP80BA"}]))
-chk(_bp[0]["F"] == "FFDP90BA", "端到端 F：品牌名已剥", _bp[0]["F"], "FFDP90BA")
-chk(_bp[0]["G"] == "大金内机FFDP90BA", "端到端 G：品牌在最前（不是「内机大金…」）",
-    _bp[0]["G"], "大金内机FFDP90BA")
-
 print("")
 print("=" * 60)
 print("通过 %d / 失败 %d" % (PASS, FAIL))

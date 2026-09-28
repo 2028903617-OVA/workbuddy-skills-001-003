@@ -13,40 +13,28 @@ import sys
 DOWNLOADS = r"D:\Backup\Downloads"
 
 
-def _header_and_row2(path):
-    """读表头与第 2 行。read_only 下 dimension 损坏的导出文件会只读到 1 列
-    （实测 09-21 产品快照 max_column=1），列数 < 3 时回退非只读模式。"""
-    import openpyxl
-    for read_only in (True, False):
-        try:
-            wb = openpyxl.load_workbook(path, read_only=read_only, data_only=True)
-            ws = wb[wb.sheetnames[0]]
-            hdr = row2 = None
-            for row in ws.iter_rows(min_row=1, max_row=1, values_only=True):
-                hdr = [str(h) if h is not None else "" for h in row]
-            for row in ws.iter_rows(min_row=2, max_row=2, values_only=True):
-                row2 = list(row)
-            wb.close()
-            if hdr and len(hdr) >= 3:
-                return hdr, row2
-        except Exception:
-            continue
-    return None, None
-
-
 def find_snapshot(pattern, required_cols):
     files = sorted(glob.glob(os.path.join(DOWNLOADS, pattern)), reverse=True)
     for f in files:
         if os.path.basename(f).startswith("~$"):
             continue
-        hdr, row2 = _header_and_row2(f)
-        if hdr is None:
+        try:
+            import openpyxl
+            wb = openpyxl.load_workbook(f, read_only=True, data_only=True)
+            ws = wb[wb.sheetnames[0]]
+            hdr = None
+            for row in ws.iter_rows(min_row=1, max_row=1, values_only=True):
+                hdr = [str(h) if h is not None else "" for h in row]
+            ok = bool(hdr) and all(c in hdr for c in required_cols)
+            if ok:
+                for row in ws.iter_rows(min_row=2, max_row=2, values_only=True):
+                    if not row or row[0] is None or str(row[0]).strip() == "":
+                        ok = False
+            wb.close()
+            if ok:
+                return f
+        except Exception:
             continue
-        ok = all(c in hdr for c in required_cols)
-        if ok and (not row2 or row2[0] is None or str(row2[0]).strip() == ""):
-            ok = False
-        if ok:
-            return f
     return None
 
 

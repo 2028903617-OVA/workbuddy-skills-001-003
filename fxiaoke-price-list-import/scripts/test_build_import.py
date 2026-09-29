@@ -571,5 +571,125 @@ class TestGenericFormatEndToEnd(unittest.TestCase):
         self.assertEqual(payload["新建"], 2)
 
 
+class TestFuzzyBoundarySeparators(unittest.TestCase):
+    """2026-09-29：`/`（型号变体）与 `+`（组合套装）是型号码的干净边界中断符，不得跨越匹配。
+
+    实测事故：天猫模板里「小天鹅滚筒洗衣机TG10TMC3」出现两行——第二行其实是
+    「洗干套装TG10TMC3+TH10HC3」被模糊匹配到套装内单机；「美的1.5匹定频挂机KFR-35GW」
+    被 4 个变频变体（KFR-35GW/MXY1 等）蹭名。
+    """
+
+    def test_slash_variant_not_matched_to_base(self):
+        """变频变体 KFR-35GW/MXY1 不能命中定频基型 KFR-35GW。"""
+        prods = [{"name": "美的1.5匹定频挂机KFR-35GW", "mat": "美的1.5匹定频挂机KFR-35GW",
+                  "spec": "KFR-35GW", "code": "", "pclass": "", "pitem": ""}]
+        name, _ = bi.match_product("美的1.5匹变频挂机KFR-35GW/MXY1", prods)
+        self.assertIsNone(name, "/ 变体被错误匹配到基型")
+
+    def test_combo_suffix_not_matched_to_single(self):
+        """套装 TG10TMC3+TH10HC3 不能命中套装内单机 TG10TMC3。"""
+        prods = [{"name": "小天鹅滚筒洗衣机TG10TMC3", "mat": "小天鹅滚筒洗衣机TG10TMC3",
+                  "spec": "TG10TMC3", "code": "", "pclass": "", "pitem": ""}]
+        name, _ = bi.match_product("小天鹅洗干套装TG10TMC3+TH10HC3", prods)
+        self.assertIsNone(name, "+ 套装被错误匹配到单机")
+
+    def test_combo_prefix_not_matched_to_second_unit(self):
+        """套装 X+Y 也不能命中套装里的第二台单机 Y。"""
+        prods = [{"name": "海尔干衣机HGY100-F386U1", "mat": "海尔干衣机HGY100-F386U1",
+                  "spec": "HGY100-F386U1", "code": "", "pclass": "", "pitem": ""}]
+        name, _ = bi.match_product("海尔洗干套装XQG100-BD14386TLU1+HGY100-F386U1至尊白", prods)
+        self.assertIsNone(name, "+ 套装被错误匹配到套装内另一台单机")
+
+    def test_clean_fuzzy_without_separator_still_hits(self):
+        """闸不能误伤：不含 / + 的干净型号仍可模糊命中。"""
+        prods = [{"name": "美的电饭煲MB-AFB40C8", "mat": "美的电饭煲MB-AFB40C8",
+                  "spec": "MB-AFB40C8", "code": "", "pclass": "", "pitem": ""}]
+        name, how = bi.match_product("美的电饭煲 MB-AFB40C8", prods)
+        self.assertEqual(name, "美的电饭煲MB-AFB40C8")
+
+
+class TestDedupGate(unittest.TestCase):
+    """同一系统产品被多行命中时：精确行优先，其余降级进核对清单（防重复导入）。"""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="plit_dup_")
+        self.src = os.path.join(self.tmp, "源表.xlsx")
+        self.prod = os.path.join(self.tmp, "产品快照.xlsx")
+        self.det = os.path.join(self.tmp, "明细快照.xlsx")
+        self.outdir = os.path.join(self.tmp, "out")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _make(self, rows, products):
+        from openpyxl import Workbook
+        wb = Workbook(); ws = wb.active; ws.title = "Sheet1"
+        ws.append(["物料名称", "成本价", "销售结算价", "销售限价", "销售指导价"])
+        for r in rows:
+            ws.append(r)
+        wb.save(self.src)
+        wb = Workbook(); ws = wb.active; ws.title = "产品数据"
+        ws.append(["产品名称（必填）", "物料名称", "型号规格", "物料编号", "产品大类", "产品品相"])
+        for n, spec in products:
+            ws.append([n, n, spec, "X", "", ""])
+        wb.save(self.prod)
+        wb = Workbook(); ws = wb.active; ws.title = "价目表明细数据"
+        ws.append(["唯一性ID（必填）", "价目表明细编号", "产品（必填）", "价目表（必填）",
+                   "价目表_唯一性ID（必填）"])
+        wb.save(self.det)
+
+    def _run(self):
+        import subprocess
+        return subprocess.run(
+            [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_import.py"),
+             "--source", self.src, "--org", "天猫",
+             "--product-snapshot", self.prod, "--detail-snapshot", self.det, "--outdir", self.outdir],
+            capture_output=True, text=True, encoding="utf-8")
+
+    def _new_rows(self):
+        from openpyxl import load_workbook
+        import glob
+        fs = glob.glob(os.path.join(self.outdir, "*新建*.xlsx"))
+        self.assertTrue(fs, "未生成新建文件")
+        wb = load_workbook(fs[0], data_only=True); ws = wb[wb.sheetnames[0]]
+        rr = list(ws.iter_rows(values_only=True))
+        hdr = [str(c) if c is not None else "" for c in rr[0]]
+        return [dict(zip(hdr, r)) for r in rr[1:]]
+
+    def _warn_statuses(self):
+        from openpyxl import load_workbook
+        import glob
+        fs = glob.glob(os.path.join(self.outdir, "*核对清单*.xlsx"))
+        if not fs:
+            return []
+        wb = load_workbook(fs[0], data_only=True); ws = wb[wb.sheetnames[0]]
+        out = []
+        for r in ws.iter_rows(min_row=3, values_only=True):
+            if r and len(r) > 2 and r[2]:
+                out.append(str(r[2]))
+        return out
+
+    def test_exact_wins_over_fuzzy_same_product(self):
+        # 同一产品：一行精确同名、一行带空格（模糊命中）
+        self._make([["美的电饭煲MB-AFB40C8", 100, 80, 90, 120],
+                    ["美的电饭煲 MB-AFB40C8", 200, 160, 180, 240]],
+                   [("美的电饭煲MB-AFB40C8", "MB-AFB40C8")])
+        r = self._run()
+        self.assertEqual(r.returncode, 0, r.stderr)
+        data = self._new_rows()
+        self.assertEqual(len(data), 1, "同一系统产品只能出一行")
+        self.assertIn("模糊撞名·已降级", self._warn_statuses())
+
+    def test_same_name_diff_price_warned(self):
+        # 同名两行、不同价（不同物料编码）→ 保留 1 行，另一行挂「同名多行异价」
+        self._make([["小天鹅滚筒洗衣机TG10TMC3", 3612, 3612, 4249, 4816],
+                    ["小天鹅滚筒洗衣机TG10TMC3", 7084, 7084, 8334, 9445]],
+                   [("小天鹅滚筒洗衣机TG10TMC3", "TG10TMC3")])
+        r = self._run()
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(len(self._new_rows()), 1, "同名重复应去重为一行")
+        self.assertIn("同名多行异价·待确认", self._warn_statuses())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -513,8 +513,10 @@ BRAND_WORDS = ["A.O.史密斯", "史密斯", "卡萨帝", "COLMO", "小天鹅", 
                "东芝", "索尼", "海信", "创维", "容声", "方太", "老板", "大金", "格力",
                "美的", "海尔", "科沃斯", "添可", "石头", "松下", "长虹", "能率", "TCL",
                "怡口", "约克", "云米", "九阳", "苏泊尔"]
-# 型号码紧邻字符出现这些就算边界不完整（字母数字、连字符、罗马数字后缀）
-_DIRTY_EDGE = re.compile(r"[A-Za-z0-9\-ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]")
+# 型号码紧邻字符出现这些就算边界不完整（字母数字、连字符、罗马数字后缀、以及 / + 分隔符）。
+# 2026-09-29 补 "/" "+" "＋"：此前「KFR-35GW/MXY1」(变频变体) 会命中「KFR-35GW」(定频基型)、
+# 「洗干套装TG10TMC3+TH10HC3」会命中套装内单机「TG10TMC3」→ 错配，且让导入文件出现重复「产品（必填）」。
+_DIRTY_EDGE = re.compile(r"[A-Za-z0-9\-/+＋ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩ]")
 
 
 def brand_words(s):
@@ -674,6 +676,7 @@ def main():
 
     new_rows, upd_rows, warns = [], [], []
     n_pending = n_dup = 0
+    prepared = []          # 逐行匹配结果；先收齐再做「同产品去重闸」，防止同一系统产品被多行命中导致重复导入
     for src in rows:
         # 品牌 = 产品实际品牌，与组织无关：
         #   源表品牌列优先（含「英文/中文」写法）→ 其次从型号名推断 → **推不出来留空进核对清单**
@@ -682,15 +685,12 @@ def main():
         # 价目表严格按组织(org)走：同一张价目表内可含多个品牌（如乾鑫价目表里有大金/美的）
         pb = ORG_PRICEBOOKS.get(org, "")
         sysname, how = (match_product(src["model"], products) if products else (src["model"], "无快照直填"))
-        w = {"源表型号": src["model"], "品牌": row_brand}
         if not products:
-            w["状态"] = "无产品快照·未校验"
-            w["建议"] = "导入前人工核对产品名称"
-            warns.append(w)
+            warns.append({"源表型号": src["model"], "品牌": row_brand,
+                          "状态": "无产品快照·未校验", "建议": "导入前人工核对产品名称"})
         elif sysname is None:
-            w["状态"] = "金蝶未同步"
-            w["建议"] = "先在金蝶建好并同步到纷享销客，再重跑本表"
-            warns.append(w)
+            warns.append({"源表型号": src["model"], "品牌": row_brand, "状态": "金蝶未同步",
+                          "建议": "先在金蝶建好并同步到纷享销客，再重跑本表"})
             n_pending += 1
             continue
         # 分类特例按「组织」判断（乾鑫读源表列、西门子交叉、大金固定、欣暖家留空）
@@ -705,33 +705,78 @@ def main():
                           "状态": "分类未填（选项表可能没有该品类）",
                           "建议": "确认要不要给产品大类/产品品项新增选项；无对应选项就保持留空"})
         if not matched and org not in ("欣暖家", "大金", "乾鑫"):
-            w2 = {"源表型号": src["model"], "品牌": row_brand, "状态": "分类未匹配",
-                  "建议": "请人工确认产品大类/产品品项后补填"}
-            warns.append(w2)
+            warns.append({"源表型号": src["model"], "品牌": row_brand, "状态": "分类未匹配",
+                          "建议": "请人工确认产品大类/产品品项后补填"})
+        if pb == "":
+            warns.append({"源表型号": src["model"], "品牌": row_brand,
+                          "状态": "价目表未配置", "建议": "该品牌不在启用价目表清单，请确认品牌或补充价目表"})
         grade = extract_grade(src["note"])
         if row_brand == QIXIN:
             price = limit = settle = cost = None
             pitem = ""
         else:
             price, limit, settle, cost = src["price"], src["limit"], src["settle"], src["cost"]
+        prepared.append({
+            "src": src, "sys": sysname, "how": how, "brand": row_brand, "pb": pb,
+            "pclass": pclass, "pitem": pitem, "grade": grade,
+            "price": price, "limit": limit, "settle": settle, "cost": cost,
+        })
+
+    # ---- 同产品去重闸（2026-09-29 新增）----
+    # 同一系统产品被多行命中会生成重复「产品（必填）」，导入时报错/产生重复明细。
+    # 规则：精确匹配行优先保留；无精确行时保留首行；被丢弃行降级进核对清单人工确认。
+    _groups = {}
+    for i, p in enumerate(prepared):
+        _groups.setdefault((p["sys"], p["pb"]), []).append(i)
+    keep_idx = set()
+    for (sysname, _pb), idxs in _groups.items():
+        if len(idxs) == 1:
+            keep_idx.add(idxs[0])
+            continue
+        exacts = [i for i in idxs if prepared[i]["how"] == "精确"]
+        if exacts:
+            winner = exacts[0]
+            combos = {(prepared[i]["cost"], prepared[i]["settle"],
+                       prepared[i]["limit"], prepared[i]["price"]) for i in exacts}
+            for i in idxs:
+                if i == winner:
+                    keep_idx.add(i)
+                elif i in exacts:
+                    warns.append({"源表型号": prepared[i]["src"]["model"], "品牌": prepared[i]["brand"],
+                                  "状态": "同名多行同价·已去重" if len(combos) == 1 else "同名多行异价·待确认",
+                                  "建议": "与系统产品「%s」重复，已保留第一条；请人工确认本条" % sysname})
+                else:
+                    warns.append({"源表型号": prepared[i]["src"]["model"], "品牌": prepared[i]["brand"],
+                                  "状态": "模糊撞名·已降级",
+                                  "建议": "与系统产品「%s」撞名但非精确同名，已降级不导入；请人工确认" % sysname})
+        else:
+            keep_idx.add(idxs[0])
+            for i in idxs[1:]:
+                warns.append({"源表型号": prepared[i]["src"]["model"], "品牌": prepared[i]["brand"],
+                              "状态": "模糊撞名·已降级",
+                              "建议": "多行模糊命中同一系统产品「%s」且无精确同名行，已降级；请人工确认" % sysname})
+
+    for i, p in enumerate(prepared):
+        if i not in keep_idx:
+            continue
+        sysname, pb = p["sys"], p["pb"]
         base = {
-            "成本价": round_price(cost), "销售结算价": round_price(settle),
-            "品牌负责人审核价": round_price(limit), "品牌": row_brand,
-            "产品大类": pclass, "产品品项": pitem, "产品等级": grade, "价目表折扣（%）": 100,
-            "产品（必填）": sysname, "价目表售价": round_price(price), "价目表（必填）": pb,
+            "成本价": round_price(p["cost"]), "销售结算价": round_price(p["settle"]),
+            "品牌负责人审核价": round_price(p["limit"]), "品牌": p["brand"],
+            "产品大类": p["pclass"], "产品品项": p["pitem"], "产品等级": p["grade"],
+            "价目表折扣（%）": 100, "产品（必填）": sysname,
+            "价目表售价": round_price(p["price"]), "价目表（必填）": pb,
             "业务类型（必填）": "预设业务类型",
         }
-        if pb == "":
-            warns.append({"源表型号": src["model"], "品牌": row_brand,
-                          "状态": "价目表未配置", "建议": "该品牌不在启用价目表清单，请确认品牌或补充价目表"})
         key = (sysname, pb)
         if pb and key in details:
             uid, no, pbid = details[key]
             upd_rows.append({
                 "唯一性ID（必填）": uid, "价目表明细编号": no,
-                "成本价": round_price(cost), "销售结算价": round_price(settle),
-                "品牌负责人审核价": round_price(limit),
-                "价目表售价": round_price(price), "价目表_唯一性ID（必填）": pbid, "价目表（必填）": pb,
+                "成本价": round_price(p["cost"]), "销售结算价": round_price(p["settle"]),
+                "品牌负责人审核价": round_price(p["limit"]),
+                "价目表售价": round_price(p["price"]), "价目表_唯一性ID（必填）": pbid,
+                "价目表（必填）": pb,
             })
             n_dup += 1
         else:

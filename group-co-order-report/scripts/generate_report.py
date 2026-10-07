@@ -123,10 +123,9 @@ def fill_info(df, card_map, pay_map):
     df['银行卡号'] = ''
     df['开户行'] = ''
     df['内部带单费付款公司'] = ''
+    df['_pay_hit'] = False   # 是否命中参考表（供过滤后汇总"待确认"清单）
 
     unmatched_card = []
-    unmatched_pay = []
-    pending_confirm = {}   # 未在参考表命中的部门: {部门: (公司, 兜底付款公司)}
 
     for i, r in df.iterrows():
         emp = str(r['内部员工姓名']).strip()
@@ -138,30 +137,16 @@ def fill_info(df, card_map, pay_map):
             df.at[i, '开户行'] = card_map[emp][1]
         pay_company, hit = _resolve_pay_company(dept, company, pay_map)
         df.at[i, '内部带单费付款公司'] = pay_company
-        if not hit:
-            pending_confirm[dept] = (company, pay_company)
+        df.at[i, '_pay_hit'] = bool(hit)
 
         status = 'OK' if (df.at[i, '银行卡号'] and df.at[i, '银行卡号'] != 'nan') else '未匹配'
         pay = df.at[i, '内部带单费付款公司']
         print(f"  {emp} | 卡号: {df.at[i, '银行卡号']} | 付款公司: {pay} | {status}")
         if status == '未匹配':
             unmatched_card.append(emp)
-        if not pay or pay == 'nan':
-            unmatched_pay.append((emp, dept))
 
     if unmatched_card:
         print(f"\n⚠️ 未匹配银行卡号: {unmatched_card}")
-    if unmatched_pay:
-        print(f"\n⚠️ 未匹配付款公司: {unmatched_pay}")
-
-    # 未在参考表命中的部门：已按公司兜底，需人工确认
-    if pending_confirm:
-        print(f"\n{'='*64}")
-        print(f"⚠️ 以下 {len(pending_confirm)} 个部门在参考表(内部带单费付款公司汇总表)未命中，")
-        print(f"   已按公司兜底填入付款公司 —— 请确认是否正确：")
-        for d, (c, p) in pending_confirm.items():
-            print(f"   - 部门: {d} | 公司: {c} | 已填付款公司: {p}")
-        print(f"{'='*64}")
     return df, unmatched_card
 
 
@@ -421,6 +406,16 @@ def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
 
     # 排序: 公司 → 负责人主属部门
     df_sorted = df.sort_values(['公司', '负责人主属部门']).reset_index(drop=True)
+
+    # 未命中参考表的部门（仅统计最终保留的行，供人工确认）
+    miss_df = df_sorted[~df_sorted['_pay_hit'].astype(bool)]
+    if len(miss_df) > 0:
+        print(f"\n{'='*64}")
+        print(f"⚠️ 以下部门在参考表(内部带单费付款公司汇总表)未命中，已按公司兜底 —— 请确认：")
+        for d in miss_df['负责人主属部门'].unique():
+            row = miss_df[miss_df['负责人主属部门'] == d].iloc[0]
+            print(f"   - 部门: {d} | 公司: {row['公司']} | 已填付款公司: {row['内部带单费付款公司']}")
+        print(f"{'='*64}")
 
     # === 主文件 ===
     wb = Workbook()

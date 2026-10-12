@@ -1,0 +1,16 @@
+version: 1
+
+skill:
+  name: data-edit
+  source: SKILL.md
+
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - references/**
+    - scripts/**
+
+dependencies:
+  references: []
+  scripts: []

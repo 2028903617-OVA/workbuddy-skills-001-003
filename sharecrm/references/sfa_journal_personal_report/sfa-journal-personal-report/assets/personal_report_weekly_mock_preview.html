@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>林航 个人周报 - 2026-W27</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --accent: #ffb400;
+      --accent-soft: #fff8db;
+      --accent-line: #ffe08a;
+      --text: #111827;
+      --text-soft: #374151;
+      --muted: #6b7280;
+      --faint: #9ca3af;
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --card-soft: #fbfcfe;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --green: #059669;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --amber: #d97706;
+      --toc-width: 236px;
+      --radius: 8px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+      color: var(--text-soft);
+      background:
+        linear-gradient(180deg, #ffffff 0, var(--bg) 320px),
+        var(--bg);
+    }
+    .app-shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 24px 56px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(17, 24, 39, .08);
+      flex: 0 0 auto;
+    }
+    .brand-text {
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+    .topbar-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .meta-chip,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 22px;
+      padding: 30px 0 26px;
+      align-items: stretch;
+    }
+    .hero-main {
+      min-width: 0;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-size: 34px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 15px;
+      margin: 0;
+    }
+    .context-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .context-row span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 3px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .78);
+    }
+    .health-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      padding: 18px;
+      box-shadow: 0 16px 40px rgba(17, 24, 39, .05);
+      align-self: stretch;
+    }
+    .health-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      margin-bottom: 12px;
+    }
+    .health-score {
+      color: var(--text);
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 820;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .health-grade {
+      display: inline-flex;
+      margin-top: 10px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      color: #7c5a00;
+      font-size: 12px;
+      font-weight: 760;
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .pill-slate { background: #f3f4f6; color: #4b5563; }
+    .pill-amber { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .pill-blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .layout {
+      display: grid;
+      grid-template-columns: var(--toc-width) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .toc {
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .82);
+      backdrop-filter: blur(10px);
+    }
+    .toc-title {
+      margin: 2px 0 10px;
+      color: var(--faint);
+      font-size: 11px;
+      font-weight: 760;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .toc a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 6px 8px;
+      color: var(--muted);
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .toc a::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #d1d5db;
+      flex: 0 0 auto;
+    }
+    .toc a:hover,
+    .toc a.active {
+      color: var(--text);
+      background: #f3f4f6;
+    }
+    .toc a:hover::before,
+    .toc a.active::before {
+      background: var(--accent);
+    }
+    .content {
+      min-width: 0;
+    }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 24px rgba(17, 24, 39, .035);
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      color: var(--text);
+      font-size: 19px;
+      line-height: 1.3;
+      font-weight: 780;
+      letter-spacing: 0;
+    }
+    .section-title .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .section-title::after {
+      content: "";
+      height: 2px;
+      flex: 1 1 auto;
+      background: linear-gradient(90deg, var(--accent), rgba(255, 180, 0, 0));
+      min-width: 40px;
+    }
+    .brief-box {
+      background: var(--card-soft);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .brief-box p { margin: 0 0 10px; }
+    .brief-box p:last-child { margin-bottom: 0; }
+    .summary-grid,
+    .metric-grid,
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .summary-card,
+    .metric-card,
+    .action-card,
+    .diagnosis-card,
+    .feature-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--card-soft);
+    }
+    .summary-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .summary-card::before,
+    .metric-card::before,
+    .feature-card::before {
+      content: "";
+      display: block;
+      width: 28px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--accent);
+      margin-bottom: 10px;
+    }
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+      margin-bottom: 4px;
+    }
+    .value {
+      color: var(--text);
+      font-weight: 780;
+    }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      font-size: 13px;
+    }
+    th {
+      background: #f9fafb;
+      padding: 10px 12px;
+      text-align: left;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #eef2f7;
+      color: var(--text-soft);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: 0; }
+    ul { margin: 0; padding-left: 20px; }
+    li + li { margin-top: 8px; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 780;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .tag-p0 { background: #fef2f2; color: var(--red); border-color: #fecaca; }
+    .tag-p1 { background: #fffbeb; color: var(--amber); border-color: #fde68a; }
+    .tag-p2 { background: #eff6ff; color: var(--blue); border-color: #bfdbfe; }
+    .alert-box {
+      border-radius: var(--radius);
+      padding: 13px 15px;
+      margin: 12px 0;
+      font-size: 13px;
+      line-height: 1.75;
+      border: 1px solid var(--border);
+    }
+    .alert-red { background: #fff7f7; border-color: #fecaca; color: #991b1b; }
+    .alert-amber { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+    .alert-blue { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+    .compact-list {
+      display: grid;
+      gap: 10px;
+    }
+    .compact-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      background: #fff;
+    }
+    .compact-item strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .period-daily .health-panel {
+      box-shadow: none;
+      background: linear-gradient(180deg, #fff 0, #fffdf4 100%);
+      align-self: start;
+      min-height: 0;
+    }
+    .period-daily .section {
+      box-shadow: none;
+    }
+    .period-daily .metric-grid,
+    .period-daily .summary-grid {
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+    .period-weekly .section-title .num {
+      background: var(--accent-soft);
+      border-color: var(--accent-line);
+    }
+    .period-monthly .health-panel {
+      background: linear-gradient(180deg, #fff 0, #f8fbff 100%);
+    }
+    .period-monthly .summary-card::before,
+    .period-monthly .metric-card::before,
+    .period-monthly .feature-card::before {
+      background: #2563eb;
+    }
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .action-card {
+      min-width: 0;
+      background: #fff;
+    }
+    .action-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .p0 { border-top: 3px solid var(--red); }
+    .p1 { border-top: 3px solid var(--amber); }
+    .p2 { border-top: 3px solid var(--blue); }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      box-shadow: none;
+    }
+    @media (max-width: 1080px) {
+      .app-shell { padding: 22px 18px 46px; }
+      .hero { grid-template-columns: 1fr; }
+      .health-panel { max-width: none; }
+      .layout { display: block; }
+      .toc { display: none; }
+    }
+    @media (max-width: 760px) {
+      .app-shell { padding: 18px 12px 38px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .topbar-meta { justify-content: flex-start; }
+      .hero { padding: 24px 0 20px; }
+      h1 { font-size: 26px; }
+      .subtitle { font-size: 14px; }
+      .section { padding: 16px; margin-bottom: 14px; }
+      .section-title { font-size: 17px; }
+      .section-title::after { display: none; }
+      .summary-grid,
+      .metric-grid,
+      .feature-grid,
+      .action-grid { grid-template-columns: 1fr; }
+      .health-score { font-size: 38px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .app-shell { max-width: none; padding: 0; }
+      .topbar,
+      .toc { display: none; }
+      .hero { grid-template-columns: 1fr 220px; padding: 18px 0; }
+      .section {
+        break-inside: avoid;
+        box-shadow: none;
+        border-color: #d1d5db;
+      }
+    }
+  </style>
+</head>
+<body class="period-weekly">
+  <div class="app-shell">
+    <header>
+      <div class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-text">个人销售经营复盘</span>
+        </div>
+        <div class="topbar-meta">
+          <span class="meta-chip"><span class="status-dot"></span>个人周报</span>
+          <span class="meta-chip">2026-06-29 至 2026-07-05</span>
+        </div>
+      </div>
+
+      <section class="hero">
+        <div class="hero-main">
+          <div class="eyebrow"><span class="status-dot"></span>个人周报速览 · 销售战报</div>
+          <h1>林航 个人周报 - 2026-W27</h1>
+          <p class="subtitle">先看本周经营信号和承诺兑现，再定位重点商机、风险卡点和下周打法。</p>
+          <div class="context-row" aria-label="报告基础信息">
+            <span>林航 · 华北政企客户经理</span>
+            <span>CRM模拟数据</span>
+          </div>
+          <div class="tag-row">
+            <span class="pill pill-amber">承诺兑现率75%</span>
+<span class="pill pill-blue">Pipeline新增180万</span>
+<span class="pill pill-amber">P0风险2项</span>
+<span class="pill pill-slate">重点商机4个</span>
+          </div>
+        </div>
+        <aside class="health-panel" aria-label="周度经营健康度">
+          <div class="health-label">周度经营健康度</div>
+          <div class="health-score">76</div>
+          <div class="health-grade">需关注 · Pipeline质量分化</div>
+        </aside>
+      </section>
+    </header>
+
+    <div class="layout">
+      <aside class="toc">
+        <div class="toc-title">报告目录</div>
+        <a href="#summary" class="active">本周摘要</a>
+        <a href="#metrics">关键经营信号</a>
+        <a href="#results">承诺对账与本周结果</a>
+        <a href="#opportunities">重点客户与商机</a>
+        <a href="#risks">承诺与风险</a>
+        <a href="#actions">下周动作</a>
+        <a href="#review">复盘与数据说明</a>
+      </aside>
+
+      <main class="content">
+        <section class="section" id="summary">
+          <h2 class="section-title"><span class="num">01</span>本周摘要</h2>
+          <div class="brief-box">
+            <p>本周整体推进质量中等偏上：新增Pipeline 180万，2个重点商机进入预算/技术评审，但上周4项承诺仅兑现3项，海淀城投法务和东城卫健委关键人确认仍是下周P0。下周打法应从“多触达”转向“关键人和采购节点确认”。</p>
+          </div>
+          <div class="summary-grid" style="margin-top: 14px;">
+            <div class="summary-card"><span class="label">本周最重要结果</span><div class="value">通州农业局进入预算审批</div></div>
+<div class="summary-card"><span class="label">经营信号</span><div class="value">Pipeline新增180万</div></div>
+<div class="summary-card"><span class="label">最大风险</span><div class="value">2个商机关键节点未闭环</div></div>
+<div class="summary-card"><span class="label">下周第一动作</span><div class="value">锁定法务和EB确认</div></div>
+          </div>
+        </section>
+
+        <section class="section" id="metrics">
+          <h2 class="section-title"><span class="num">02</span>关键经营信号</h2>
+          <div class="metric-grid"><div class="metric-card"><span class="label">新增Pipeline</span><div class="value">180万</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">其中深度阶段60万</p></div><div class="metric-card"><span class="label">待办兑现率</span><div class="value">75%</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">4项承诺兑现3项</p></div><div class="metric-card"><span class="label">有效会议/Demo</span><div class="value">5场</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">3场形成明确下一步</p></div><div class="metric-card"><span class="label">成交/回款</span><div class="value">0 / 30万</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">回款来自存量订单</p></div><div class="metric-card"><span class="label">停滞商机</span><div class="value">2个</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">均缺关键人确认</p></div><div class="metric-card"><span class="label">下周P0</span><div class="value">3项</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">均绑定成交或阶段推进</p></div></div>
+        </section>
+
+        <section class="section" id="results">
+          <h2 class="section-title"><span class="num">03</span>承诺对账与本周结果</h2>
+          <div class="compact-list"><div class="compact-item"><strong>已兑现承诺</strong><span>通州农业局方案边界确认、北辰教育集团二轮演示、朝阳文旅局合规材料补齐。</span></div><div class="compact-item"><strong>延期承诺</strong><span>海淀城投合同条款未按周三闭环，新截止时间调整为下周二，需法务直接确认。</span></div><div class="compact-item"><strong>本周关键成果</strong><span>通州农业局进入预算审批，北辰教育集团形成校区主任反馈机制，朝阳文旅局进入技术评审材料池。</span></div></div>
+        </section>
+
+        <section class="section" id="opportunities">
+          <h2 class="section-title"><span class="num">04</span>重点客户与商机</h2>
+          <div class="compact-list"><div class="compact-item"><strong>通州农业局 · 80万 · 预算审批</strong><span>关键人：信息中心李主任。动作：完成方案边界确认。承诺：本周内提交预算。卡点：预算页需更贴合专项口径。下周动作：提交预算页并确认审批时间。</span></div><div class="compact-item"><strong>北辰教育集团 · 60万 · 方案验证</strong><span>关键人：教务负责人周总。动作：完成二轮演示。承诺：周五组织校区主任反馈。卡点：校区使用成本仍需量化。</span></div><div class="compact-item"><strong>海淀城投 · 120万 · 合同条款</strong><span>关键人：采购张经理、法务王经理。动作：2次催办合同意见。承诺：无明确客户承诺。卡点：法务红线未输出，阶段推进存疑。</span></div><div class="compact-item"><strong>东城卫健委 · 90万 · 需求确认</strong><span>关键人：信息科负责人。动作：完成需求访谈。卡点：经济决策人未确认，预算来源不清。</span></div></div>
+        </section>
+
+        <section class="section" id="risks">
+          <h2 class="section-title"><span class="num">05</span>承诺与风险</h2>
+          <div class="compact-list"><div class="compact-item"><strong>高风险 · 海淀城投</strong><span>法务条款连续延期，缺少红线清单和新截止时间，存在承诺泡沫。下周二前必须取得书面条款意见。</span></div><div class="compact-item"><strong>中风险 · 东城卫健委</strong><span>需求访谈积极但EB未确认，可能是使用部门单线推进。下周需补齐预算来源和决策链。</span></div><div class="compact-item"><strong>待确认 · 北辰教育集团</strong><span>校区主任反馈尚未发生，当前演示认可不能直接等同采购意向。</span></div></div>
+        </section>
+
+        <section class="section" id="actions">
+          <h2 class="section-title"><span class="num">06</span>下周动作</h2>
+          <div class="action-grid">
+            <div class="action-card p0">
+              <h3><span class="tag tag-p0">P0</span> 必须完成</h3>
+              <ul><li>海淀城投：约法务王经理确认红线条款，截止下周二，验证标准为客户给出可修改清单。</li><li>东城卫健委：通过信息科确认预算负责人，截止下周三，验证标准为获得EB姓名和会议时间。</li><li>通州农业局：提交预算页并确认审批节点，截止下周一，验证标准为客户确认提交时间。</li></ul>
+            </div>
+            <div class="action-card p1">
+              <h3><span class="tag tag-p1">P1</span> 重点推进</h3>
+              <ul><li>北辰教育集团：推动校区主任反馈会，形成需求优先级。</li><li>朝阳文旅局：确认技术评审材料是否进入正式评审。</li></ul>
+            </div>
+            <div class="action-card p2">
+              <h3><span class="tag tag-p2">P2</span> 持续跟进</h3>
+              <ul><li>整理本周无结论触达客户，合并低优先级维护动作。</li></ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="review">
+          <h2 class="section-title"><span class="num">07</span>复盘与数据说明</h2>
+          <div class="feature-grid"><div class="feature-card"><span class="label">有效打法</span><div class="value">围绕预算页、演示反馈、合规材料推进，能推动客户给出下一步。</div></div><div class="feature-card"><span class="label">无效动作</span><div class="value">单纯催办合同条款效果较弱，缺少法务直接对话。</div></div><div class="feature-card"><span class="label">下周调整</span><div class="value">减少普通维护触达，把时间集中在法务、EB、预算和评审节点。</div></div></div>
+          <div class="section note" style="margin: 14px 0 0;">
+            <p>模拟数据覆盖本周客户、商机、任务、销售记录、订单和日志；Pipeline为周期末模拟快照，未展示底层记录ID。</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

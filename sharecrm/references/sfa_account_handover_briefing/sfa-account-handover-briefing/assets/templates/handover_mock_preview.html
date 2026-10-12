@@ -1,0 +1,1817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>客户交接简报 - 示例区域农业服务管理中心</title>
+  <style>
+/* Team handover briefing - clean light theme */
+:root {
+  --bg: #f7f8fb;
+  --surface: #ffffff;
+  --surface-soft: #fbfcfe;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text-hi: #111827;
+  --text-mid: #374151;
+  --text-lo: #6b7280;
+  --text-faint: #9ca3af;
+  --brand: #ffb400;
+  --brand-soft: #fff8db;
+  --brand-border: #ffe08a;
+  --green: #059669;
+  --green-soft: #ecfdf5;
+  --green-border: #a7f3d0;
+  --blue: #2563eb;
+  --blue-soft: #eff6ff;
+  --blue-border: #bfdbfe;
+  --red: #dc2626;
+  --red-soft: #fef2f2;
+  --red-border: #fecaca;
+  --orange: #d97706;
+  --orange-soft: #fffbeb;
+  --orange-border: #fde68a;
+  --shadow: 0 14px 34px rgba(17, 24, 39, 0.06);
+  --radius: 8px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+html {
+  max-width: 100%;
+  overflow-x: hidden;
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
+  color: var(--text-mid);
+  background:
+    linear-gradient(180deg, #ffffff 0, var(--bg) 340px),
+    var(--bg);
+  font-family: var(--font);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+.topbar__customer,
+.topbar__info-value,
+.mobile-status-bar__customer,
+.handover-summary-item__value,
+.handover-card__content,
+td,
+th {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.main-content {
+  width: min(1280px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 22px 0 56px;
+}
+
+.mobile-only {
+  display: none !important;
+}
+
+.desktop-only {
+  display: block;
+}
+
+/* Top summary */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 2.2fr);
+  gap: 18px;
+  align-items: center;
+  padding: 14px 32px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(14px);
+}
+
+.topbar__left {
+  min-width: 0;
+}
+
+.topbar__customer {
+  color: var(--text-hi);
+  font-size: 18px;
+  font-weight: 820;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.topbar__meta,
+.mobile-status-bar__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  margin-top: 4px;
+  color: var(--text-lo);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.topbar__center {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  gap: 10px;
+  min-width: 0;
+}
+
+.topbar__divider {
+  display: none;
+}
+
+.topbar__info-block {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.topbar__info-label {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 760;
+  margin-bottom: 2px;
+}
+
+.topbar__info-value {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.topbar__info-block--status {
+  border: 1px solid var(--brand-border);
+  background: var(--brand-soft);
+}
+
+.topbar__info-block--status .topbar__info-label {
+  color: #7c5a00;
+}
+
+/* Shared components */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-lo);
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.badge--green {
+  background: var(--green-soft);
+  color: var(--green);
+  border-color: var(--green-border);
+}
+
+.badge--yellow {
+  background: var(--brand-soft);
+  color: #7c5a00;
+  border-color: var(--brand-border);
+}
+
+.badge--red {
+  background: var(--red-soft);
+  color: var(--red);
+  border-color: var(--red-border);
+}
+
+.badge--blue {
+  background: var(--blue-soft);
+  color: var(--blue);
+  border-color: var(--blue-border);
+}
+
+.badge--orange {
+  background: var(--orange-soft);
+  color: var(--orange);
+  border-color: var(--orange-border);
+}
+
+.text-green { color: var(--green) !important; }
+.text-blue { color: var(--blue) !important; }
+.text-orange { color: var(--orange) !important; }
+.text-red { color: var(--red) !important; }
+.text-strong { color: var(--text-hi) !important; }
+
+.card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+}
+
+.card-header__title {
+  color: var(--text-hi);
+  font-size: 14px;
+  font-weight: 780;
+  letter-spacing: 0;
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--blue-border);
+  border-left: 4px solid var(--brand);
+  border-radius: var(--radius);
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.alert-banner__icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--brand);
+  color: var(--text-hi);
+  flex: 0 0 auto;
+}
+
+.alert-banner__title {
+  color: var(--text-hi);
+  font-size: 14px;
+  font-weight: 780;
+  margin-bottom: 4px;
+}
+
+.alert-banner__body {
+  color: var(--text-mid);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.alert-banner__action {
+  margin-top: 7px;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+/* Score overview */
+.score-section {
+  margin-bottom: 20px;
+}
+
+.score-section__title {
+  margin-bottom: 10px;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.score-gauges--mobile {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.gauge {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.gauge__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.gauge__label {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 740;
+}
+
+.gauge__value {
+  color: var(--text-hi);
+  font-size: 24px;
+  font-weight: 840;
+  line-height: 1;
+}
+
+.gauge__bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf0f6;
+}
+
+.gauge__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand);
+}
+
+.fill-45 { width: 45%; }
+.fill-75 { width: 75%; }
+.fill-78 { width: 78%; }
+.fill-82 { width: 82%; }
+
+.gauge__note {
+  margin-top: 6px;
+  color: var(--text-lo);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.gauge--green .gauge__value {
+  color: var(--green);
+}
+
+.gauge--green .gauge__fill {
+  background: var(--green);
+}
+
+.gauge--yellow .gauge__value {
+  color: var(--orange);
+}
+
+.gauge--yellow .gauge__fill {
+  background: var(--orange);
+}
+
+.gauge--red .gauge__value {
+  color: var(--red);
+}
+
+.gauge--red .gauge__fill {
+  background: var(--red);
+}
+
+.divider {
+  display: none;
+}
+
+.brief-tabs {
+  position: sticky;
+  top: 78px;
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 10px 0;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  background: rgba(247, 248, 251, 0.9);
+  backdrop-filter: blur(12px);
+  scrollbar-width: none;
+}
+
+.brief-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.brief-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-lo);
+  font-size: 13px;
+  font-weight: 740;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brief-tab.is-active {
+  border-color: var(--brand-border);
+  background: var(--brand-soft);
+  color: var(--text-hi);
+}
+
+.tab-slice {
+  display: none !important;
+}
+
+.tab-slice.is-active {
+  display: grid !important;
+}
+
+.detail-section.tab-slice.is-active {
+  display: block !important;
+}
+
+.summary-section {
+  margin-bottom: 20px;
+}
+
+.handover-summary {
+  display: grid;
+  gap: 14px;
+}
+
+.handover-summary__headline {
+  padding: 13px 14px;
+  border-left: 4px solid var(--brand);
+  border-radius: var(--radius);
+  background: var(--brand-soft);
+  color: var(--text-hi);
+  font-size: 14px;
+  font-weight: 680;
+  line-height: 1.65;
+}
+
+.handover-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.handover-summary-item {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.handover-summary-item__label {
+  margin-bottom: 4px;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 730;
+}
+
+.handover-summary-item__value {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 740;
+  line-height: 1.48;
+}
+
+.handover-summary-item__confidence {
+  margin-top: 5px;
+  color: var(--text-lo);
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* Desktop layout */
+.pc-section {
+  display: grid;
+  gap: 20px;
+}
+
+.handover-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.handover-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.overview-stack.tab-slice.is-active {
+  display: grid !important;
+}
+
+.overview-stack {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.overview-column {
+  display: grid;
+  gap: 20px;
+  align-content: start;
+  min-width: 0;
+}
+
+.sidebar-info-grid,
+.mobile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sidebar-info-item--full {
+  grid-column: 1 / -1;
+}
+
+.sidebar-info-item__label,
+.mobile-info-label {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 730;
+  margin-bottom: 3px;
+}
+
+.sidebar-info-item__value,
+.mobile-info-value {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 740;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.sidebar-info-item__value--dim,
+.mobile-info-note {
+  color: var(--text-mid);
+  font-weight: 500;
+}
+
+.fact-list,
+.commitment-list,
+.risk-list,
+.gap-list {
+  display: grid;
+  gap: 0;
+}
+
+.fact-row,
+.commitment-row,
+.risk-row,
+.gap-row {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.fact-row:first-child,
+.commitment-row:first-child,
+.risk-row:first-child,
+.gap-row:first-child {
+  padding-top: 0;
+}
+
+.fact-row:last-child,
+.commitment-row:last-child,
+.risk-row:last-child,
+.gap-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.fact-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.fact-row__label {
+  color: var(--text-lo);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.45;
+}
+
+.fact-row__value {
+  color: var(--text-mid);
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+.commitment-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.commitment-row__title,
+.risk-row__title,
+.gap-row__title {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.commitment-row__meta,
+.risk-row__desc,
+.gap-row__desc {
+  margin-top: 3px;
+  color: var(--text-lo);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.risk-row {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.risk-row__dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: var(--orange);
+  box-shadow: 0 0 0 3px var(--orange-soft);
+}
+
+.risk-row__dot--red {
+  background: var(--red);
+  box-shadow: 0 0 0 3px var(--red-soft);
+}
+
+.action-table-wrap {
+  overflow-x: auto;
+}
+
+.action-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.action-table th {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-lo);
+  font-size: 12px;
+  font-weight: 760;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.action-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-mid);
+  font-size: 12px;
+  line-height: 1.45;
+  vertical-align: top;
+}
+
+.action-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.action-table td:first-child {
+  font-weight: 800;
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.health-item {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.health-item__label {
+  margin-bottom: 4px;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 730;
+}
+
+.health-item__value {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.health-item__note {
+  margin-top: 4px;
+  color: var(--text-lo);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.temp-summary {
+  margin-bottom: 14px;
+}
+
+.temp-summary__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+}
+
+.temp-summary__label {
+  color: var(--text-lo);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.temp-summary__value {
+  color: var(--green);
+  font-size: 14px;
+  font-weight: 820;
+}
+
+.temp-gauge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.temp-gauge__edge {
+  color: var(--text-lo);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.temp-gauge__bar {
+  height: 7px;
+  flex: 1;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf0f6;
+}
+
+.temp-gauge__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--red), var(--brand), var(--green));
+}
+
+.kp-list {
+  display: grid;
+  gap: 8px;
+}
+
+.kp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.kp-row:last-child {
+  border-bottom: 0;
+}
+
+.kp-person {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.kp-avatar,
+.kp--coach,
+.kp--eb,
+.kp--tb,
+.kp--gatekeeper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 820;
+}
+
+.kp--coach {
+  color: var(--green);
+  border: 1px solid var(--green-border);
+  background: var(--green-soft);
+}
+
+.kp--eb {
+  color: var(--blue);
+  border: 1px solid var(--blue-border);
+  background: var(--blue-soft);
+}
+
+.kp--tb {
+  color: var(--orange);
+  border: 1px solid var(--orange-border);
+  background: var(--orange-soft);
+}
+
+.kp--gatekeeper {
+  color: var(--red);
+  border: 1px solid var(--red-border);
+  background: var(--red-soft);
+}
+
+.kp-name {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.kp-role {
+  margin-top: 1px;
+  color: var(--text-lo);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.kp-score {
+  flex: 0 0 auto;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 820;
+}
+
+.timeline {
+  display: grid;
+  gap: 14px;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.timeline-marker::after {
+  content: "";
+  width: 1px;
+  flex: 1;
+  min-height: 28px;
+  background: var(--border);
+}
+
+.timeline-item:last-child .timeline-marker::after {
+  display: none;
+}
+
+.timeline-item__dot {
+  width: 9px;
+  height: 9px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.timeline-item__dot--green {
+  background: var(--green);
+  box-shadow: 0 0 0 3px var(--green-soft);
+}
+
+.timeline-item__dot--blue {
+  background: var(--blue);
+  box-shadow: 0 0 0 3px var(--blue-soft);
+}
+
+.timeline-item__dot--orange {
+  background: var(--orange);
+  box-shadow: 0 0 0 3px var(--orange-soft);
+}
+
+.timeline-item__date {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 720;
+  margin-bottom: 3px;
+}
+
+.timeline-item__title {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.timeline-item__desc {
+  margin-top: 3px;
+  color: var(--text-mid);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.comp-table-wrap {
+  overflow-x: auto;
+}
+
+.comp-table {
+  width: 100%;
+  min-width: 580px;
+  border-collapse: collapse;
+}
+
+.comp-table th {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-lo);
+  font-size: 12px;
+  font-weight: 760;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.comp-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-mid);
+  font-size: 12px;
+  line-height: 1.45;
+  vertical-align: top;
+}
+
+.comp-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.comp-table td:first-child {
+  color: var(--text-hi);
+  font-weight: 760;
+}
+
+.table-note {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--text-lo);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.table-note strong {
+  color: var(--orange);
+}
+
+.mobile-stack,
+.handover-note-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.mobile-row-list {
+  display: grid;
+  gap: 8px;
+}
+
+.mobile-compact-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-compact-row:last-child {
+  border-bottom: 0;
+}
+
+.mobile-title {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.mobile-desc {
+  margin-top: 2px;
+  color: var(--text-lo);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.detail-section {
+  margin-top: 20px;
+}
+
+.handover-card {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.handover-card__label {
+  color: var(--text-hi);
+  font-size: 13px;
+  font-weight: 780;
+  margin-bottom: 8px;
+}
+
+.handover-card__content {
+  color: var(--text-mid);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.handover-card__content strong {
+  color: var(--text-hi);
+  font-weight: 760;
+}
+
+.quality-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.callout-line {
+  display: block;
+  margin-top: 4px;
+}
+
+.callout-line--no {
+  color: var(--red);
+}
+
+.callout-line--yes {
+  color: var(--green);
+}
+
+@media (max-width: 1180px) {
+  .topbar {
+    grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1fr);
+  }
+
+  .topbar__center {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+
+  .overview-stack {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1023px) {
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
+
+  .main-content {
+    width: min(100% - 28px, 720px);
+    padding-top: 14px;
+    padding-bottom: 36px;
+  }
+
+  .mobile-status-bar {
+    position: relative;
+    top: auto;
+    z-index: 1;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.15fr) minmax(210px, 0.85fr);
+    align-items: start;
+    gap: 16px;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    margin: 0 0 14px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--brand);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .mobile-status-bar__left {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobile-status-bar__customer {
+    color: var(--text-hi);
+    font-size: 19px;
+    font-weight: 820;
+    line-height: 1.32;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .mobile-status-bar__meta {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .mobile-status-bar__meta > span {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .mobile-status-bar__status {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 4px;
+    min-width: 0;
+    max-width: 100%;
+    padding: 11px 12px;
+    border-left: 3px solid var(--green);
+    border-radius: 6px;
+    background: var(--green-soft);
+    text-align: left;
+  }
+
+  .mobile-status-bar__score {
+    grid-row: 2;
+    color: var(--green);
+    font-size: 14px;
+    font-weight: 780;
+    line-height: 1.55;
+    overflow-wrap: break-word;
+    word-break: normal;
+    white-space: normal;
+  }
+
+  .mobile-status-bar__label {
+    grid-row: 1;
+    color: var(--text-faint);
+    font-size: 10px;
+    font-weight: 760;
+  }
+
+  .alert-banner {
+    margin-bottom: 14px;
+  }
+
+  .brief-tabs {
+    top: 0;
+    margin-bottom: 14px;
+    padding: 8px 0;
+  }
+
+  .score-gauges--mobile {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .score-gauges--mobile::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gauge {
+    width: 178px;
+    flex: 0 0 auto;
+  }
+
+  .mobile-stack {
+    display: grid !important;
+    gap: 14px;
+  }
+
+  .mobile-stack .tab-slice.is-active {
+    display: block !important;
+  }
+
+  .card-header {
+    padding: 13px 14px;
+  }
+
+  .card-body {
+    padding: 14px;
+  }
+
+  .temp-gauge {
+    padding: 9px 10px;
+  }
+
+  .kp-row {
+    align-items: flex-start;
+  }
+
+  .comp-table {
+    min-width: 0;
+  }
+
+  .handover-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+@media (max-width: 640px) {
+  .main-content {
+    width: min(100% - 20px, 720px);
+  }
+
+  .mobile-status-bar {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .mobile-status-bar__status {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px 10px;
+    padding: 11px 0 0;
+    border-top: 1px solid var(--border);
+    border-left: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .mobile-status-bar__label {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    min-height: 22px;
+    padding: 4px 7px;
+    border: 1px solid var(--green-border);
+    border-radius: 999px;
+    background: var(--green-soft);
+    color: var(--green);
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .mobile-status-bar__score {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .alert-banner > div:last-child {
+    min-width: 0;
+  }
+
+  .alert-banner__title,
+  .alert-banner__body,
+  .alert-banner__action {
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .sidebar-info-grid,
+  .mobile-info-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .handover-summary-grid,
+  .health-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fact-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .mobile-compact-row {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 420px) {
+  .mobile-status-bar {
+    padding: 12px;
+  }
+
+  .mobile-status-bar__meta {
+    gap: 5px;
+  }
+
+  .mobile-status-bar__customer {
+    font-size: 18px;
+  }
+
+  .sidebar-info-grid,
+  .mobile-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .topbar,
+  .main-content {
+    width: 100%;
+    padding: 0;
+  }
+
+  .card,
+  .gauge,
+  .handover-card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}
+
+  </style>
+</head>
+<body data-template-id="sfa-account-handover-briefing-v1" data-template-version="1.0" data-report-mode="standard" data-preview="true">
+
+<!--
+  Team handover briefing template.
+  Keep the 0703 visual system and replace every template placeholder from the same
+  handover_facts_bundle used for the Markdown output. Do not leave sample data.
+-->
+
+<header class="topbar desktop-only">
+  <div class="topbar__left">
+    <div class="topbar__customer">示例区域农业服务管理中心</div>
+    <div class="topbar__meta">
+      <span class="badge badge--yellow">交接中</span>
+      <span>未成交，商机处于需求确认阶段，跟进已中断 51 天</span>
+      <span>·</span>
+      <span>6,800,000.00 元</span>
+      <span>·</span>
+      <span>接手人：接手人 李经理</span>
+    </div>
+  </div>
+
+  <div class="topbar__divider"></div>
+
+  <div class="topbar__center">
+    <div class="topbar__info-block">
+      <div class="topbar__info-label">行业·规模</div>
+      <div class="topbar__info-value">高端制造 · 集团型客户</div>
+    </div>
+    <div class="topbar__divider"></div>
+    <div class="topbar__info-block">
+      <div class="topbar__info-label">交接原因</div>
+      <div class="topbar__info-value text-blue">原负责人岗位调整</div>
+    </div>
+    <div class="topbar__divider"></div>
+    <div class="topbar__info-block">
+      <div class="topbar__info-label">原负责人</div>
+      <div class="topbar__info-value">原负责人 王经理</div>
+    </div>
+    <div class="topbar__divider"></div>
+    <div class="topbar__info-block topbar__info-block--status">
+      <div class="topbar__info-label">交接状态</div>
+      <div class="topbar__info-value">高风险交接：跟进中断 51 天，竞品在场，决策链尚未完整</div>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="mobile-status-bar mobile-only">
+    <div class="mobile-status-bar__left">
+      <div class="mobile-status-bar__customer">示例区域农业服务管理中心</div>
+      <div class="mobile-status-bar__meta">
+        <span class="badge badge--yellow">交接中</span>
+        <span>未成交，商机处于需求确认阶段，跟进已中断 51 天</span>
+        <span>·</span>
+        <span>6,800,000.00 元</span>
+      </div>
+    </div>
+    <div class="mobile-status-bar__status">
+      <div class="mobile-status-bar__label">交接状态</div>
+      <div class="mobile-status-bar__score">
+        <span>高风险交接：跟进中断 51 天，竞品在场，决策链尚未完整</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-banner">
+    <div class="alert-banner__icon" aria-hidden="true"></div>
+    <div>
+      <div class="alert-banner__title">先兑现历史承诺，再推进新方案</div>
+      <div class="alert-banner__body">原负责人承诺的接口边界说明已逾期，客户技术负责人已两次追问。</div>
+      <div class="alert-banner__action">第一动作：原负责人、接手人和售前共同确认交付时间。</div>
+    </div>
+  </div>
+
+  <div class="score-section" id="handover-quality-signals">
+    <div class="score-section__title">交接质量信号</div>
+    <div class="score-gauges--mobile">
+      <div class="gauge gauge--yellow">
+        <div class="gauge__header">
+          <span class="gauge__label">信息完整度</span>
+          <span class="gauge__value">部分</span>
+        </div>
+        <div class="gauge__bar"><div class="gauge__fill" style="width: 60%;"></div></div>
+        <div class="gauge__note">客户、商机和联系人已读取，会议与回款仍需补查</div>
+      </div>
+
+      <div class="gauge gauge--yellow">
+        <div class="gauge__header">
+          <span class="gauge__label">关系温度</span>
+          <span class="gauge__value">稳定</span>
+        </div>
+        <div class="gauge__bar"><div class="gauge__fill" style="width: 55%;"></div></div>
+        <div class="gauge__note">内部支持者保持支持，最终预算人尚未覆盖</div>
+      </div>
+
+      <div class="gauge gauge--yellow">
+        <div class="gauge__header">
+          <span class="gauge__label">竞品风险</span>
+          <span class="gauge__value">中</span>
+        </div>
+        <div class="gauge__bar"><div class="gauge__fill" style="width: 60%;"></div></div>
+        <div class="gauge__note">已确认一家具名竞品，报价和方案未知</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <nav class="brief-tabs" aria-label="交接简报分页">
+    <a class="brief-tab is-active" href="#handover-overview" data-tab-target="overview" aria-selected="true">概览</a>
+    <a class="brief-tab" href="#handover-history" data-tab-target="history" aria-selected="false">历程与竞争</a>
+    <a class="brief-tab" href="#handover-notes" data-tab-target="notes" aria-selected="false">交接备注</a>
+    <a class="brief-tab" href="#data-quality" data-tab-target="quality" aria-selected="false">数据质量</a>
+  </nav>
+
+  <div class="summary-section tab-slice is-active" id="handover-summary" data-tab-slice="overview">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">接手人必读摘要</span>
+        <span class="badge badge--yellow">第一屏结论</span>
+      </div>
+      <div class="card-body">
+        <div class="handover-summary">
+          <div class="handover-summary__headline">客户仍在积极评估，但接口承诺逾期和预算决策人缺失是接手后的两个最高优先级。</div>
+          <div class="handover-summary-grid">
+            <div class="handover-summary-item"><div class="handover-summary-item__label">当前客户状态</div><div class="handover-summary-item__value">方案评估中，预计八月进入商务阶段</div><div class="handover-summary-item__confidence">置信度：确认</div></div><div class="handover-summary-item"><div class="handover-summary-item__label">交接原因</div><div class="handover-summary-item__value">原负责人岗位调整</div><div class="handover-summary-item__confidence">置信度：确认</div></div><div class="handover-summary-item"><div class="handover-summary-item__label">最大风险</div><div class="handover-summary-item__value">接口边界说明逾期</div><div class="handover-summary-item__confidence">置信度：确认</div></div><div class="handover-summary-item"><div class="handover-summary-item__label">最关键关系</div><div class="handover-summary-item__value">运营总监周总是当前内部支持者</div><div class="handover-summary-item__confidence">置信度：推断</div></div><div class="handover-summary-item"><div class="handover-summary-item__label">待兑现承诺</div><div class="handover-summary-item__value">本周补齐接口与数据安全说明</div><div class="handover-summary-item__confidence">置信度：确认</div></div><div class="handover-summary-item"><div class="handover-summary-item__label">第一周重点</div><div class="handover-summary-item__value">完成引荐、兑现承诺并补齐预算链</div><div class="handover-summary-item__confidence">置信度：确认</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="desktop-only pc-section">
+    <div class="overview-stack tab-slice is-active" id="handover-overview" data-tab-slice="overview">
+      <div class="overview-column">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header__title">交接背景</span>
+            <span class="badge badge--yellow">高</span>
+          </div>
+          <div class="card-body">
+            <div class="fact-list">
+              <div class="fact-row"><div class="fact-row__label">交接背景</div><div class="fact-row__value">原负责人岗位调整，客户进入方案评估关键期</div></div><div class="fact-row"><div class="fact-row__label">当前状态</div><div class="fact-row__value">POC 已通过，预算审批链尚未完全确认</div></div><div class="fact-row"><div class="fact-row__label">交接要求</div><div class="fact-row__value">原负责人需完成内部支持者和技术负责人的当面引荐</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header__title">关系温度</span>
+            <span class="badge badge--green">信任</span>
+          </div>
+          <div class="card-body">
+            <div class="temp-summary">
+              <div class="temp-summary__row">
+                <span class="temp-summary__label">整体关系</span>
+                <span class="temp-summary__value">+3</span>
+              </div>
+              <div class="temp-gauge">
+                <span class="temp-gauge__edge">敌对</span>
+                <div class="temp-gauge__bar">
+                  <div class="temp-gauge__fill" style="width: 80%;"></div>
+                </div>
+                <span class="temp-gauge__edge">铁杆</span>
+              </div>
+            </div>
+            <div class="kp-list">
+              <div class="kp-row"><div class="kp-person"><div class="kp--coach">周</div><div><div class="kp-name">周总 · 运营总监</div><div class="kp-role">内部支持者 · 需要原负责人当面引荐</div></div></div><div class="kp-score">+3 <span class="badge badge--green">确认</span></div></div><div class="kp-row"><div class="kp-person"><div class="kp--tb">陈</div><div><div class="kp-name">陈总 · 信息化负责人</div><div class="kp-role">技术把关人（TB） · 关注接口和数据安全</div></div></div><div class="kp-score">+1 <span class="badge badge--green">确认</span></div></div><div class="kp-row"><div class="kp-person"><div class="kp--eb">刘</div><div><div class="kp-name">刘总 · 财务副总</div><div class="kp-role">最终决策人（EB） · 尚未建立直接联系</div></div></div><div class="kp-score">未知 <span class="badge badge--yellow">推断</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="overview-column">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header__title">客户画像</span>
+            <span class="badge badge--blue">接手必读</span>
+          </div>
+          <div class="card-body">
+            <div class="sidebar-info-grid">
+              <div class="sidebar-info-item"><div class="sidebar-info-item__label">行业</div><div class="sidebar-info-item__value">高端装备制造</div></div><div class="sidebar-info-item"><div class="sidebar-info-item__label">规模</div><div class="sidebar-info-item__value">集团型客户，约 2,000 人</div></div><div class="sidebar-info-item"><div class="sidebar-info-item__label">主要项目</div><div class="sidebar-info-item__value">集团 CRM 升级</div></div><div class="sidebar-info-item"><div class="sidebar-info-item__label">当前阶段</div><div class="sidebar-info-item__value">方案评估</div></div><div class="sidebar-info-item sidebar-info-item--full"><div class="sidebar-info-item__label">客户目标</div><div class="sidebar-info-item__value">统一客户数据与销售预测</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header__title">待兑现承诺</span>
+            <span class="badge badge--red">接手优先</span>
+          </div>
+          <div class="card-body">
+            <div class="commitment-list">
+              <div class="commitment-row"><div><div class="commitment-row__title">接口边界说明</div><div class="commitment-row__meta">我方 · 截止 2026-07-10 · 售前三天内补齐</div></div><span class="badge badge--red">逾期</span></div><div class="commitment-row"><div><div class="commitment-row__title">提供预算审批节点</div><div class="commitment-row__meta">客户 · 截止 2026-07-18 · 由周总协助确认</div></div><span class="badge badge--yellow">进行中</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="handover-grid tab-slice" id="handover-history" data-tab-slice="history">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">博弈编年</span>
+          <span class="badge badge--green">关键节点</span>
+        </div>
+        <div class="card-body">
+          <div class="timeline">
+            <div class="timeline-item"><div class="timeline-marker"><div class="timeline-item__dot timeline-item__dot--green"></div></div><div><div class="timeline-item__date">2026-05-20 · 确认</div><div class="timeline-item__title">客户启动 CRM 升级评估</div><div class="timeline-item__desc">运营部门牵头，周总成为主要推动者；交接影响：形成稳定内部支持者</div></div></div><div class="timeline-item"><div class="timeline-marker"><div class="timeline-item__dot timeline-item__dot--green"></div></div><div><div class="timeline-item__date">2026-06-26 · 确认</div><div class="timeline-item__title">POC 通过</div><div class="timeline-item__desc">业务侧反馈正向，技术侧要求补接口说明；交接影响：项目进入方案评估</div></div></div><div class="timeline-item"><div class="timeline-marker"><div class="timeline-item__dot timeline-item__dot--green"></div></div><div><div class="timeline-item__date">2026-07-10 · 确认</div><div class="timeline-item__title">接口说明承诺逾期</div><div class="timeline-item__desc">客户技术负责人再次催问；交接影响：接手后必须优先修复信任</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">竞品历史</span>
+          <span class="badge badge--yellow">存在明确竞品</span>
+        </div>
+        <div class="card-body">
+          <div class="comp-table-wrap">
+            <table class="comp-table">
+              <thead>
+                <tr>
+                  <th>竞品</th>
+                  <th>介入时间</th>
+                  <th>竞争阶段</th>
+                  <th>应对策略</th>
+                  <th>结果</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>竞品 A</td><td>2026-06</td><td>方案比较</td><td>用集团实践和接口边界回应</td><td>未决 <span class="badge badge--green">确认</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-note">
+            <strong>接手人注意：</strong>不得把未读取的竞品报价写成我方优势。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="handover-grid tab-slice" data-tab-slice="notes">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">风险与敏感点</span>
+          <span class="badge badge--red">不能踩坑</span>
+        </div>
+        <div class="card-body">
+          <div class="risk-list">
+            <div class="risk-row"><div class="risk-row__dot risk-row__dot--red"></div><div><div class="risk-row__title">历史承诺逾期 · 高</div><div class="risk-row__desc">接口说明尚未交付；接手处理：先兑现再谈新增范围；置信度：确认</div></div></div><div class="risk-row"><div class="risk-row__dot"></div><div><div class="risk-row__title">预算决策链缺口 · 中</div><div class="risk-row__desc">财务副总态度未知；接手处理：通过周总确认进入路径；置信度：推断</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">接手建议</span>
+          <span class="badge badge--green">第一周</span>
+        </div>
+        <div class="card-body">
+          <div class="action-table-wrap">
+            <table class="action-table">
+              <thead>
+                <tr>
+                  <th>优先级</th>
+                  <th>动作</th>
+                  <th>负责人</th>
+                  <th>完成标准</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>高</td><td>完成关键人当面引荐<div class="mobile-desc">避免关系断档</div></td><td>原负责人/接手人</td><td>周总和陈总确认新接口人</td></tr><tr><td>高</td><td>交付接口边界说明<div class="mobile-desc">修复逾期承诺</div></td><td>售前</td><td>客户技术负责人书面确认</td></tr><tr><td>中</td><td>补齐预算审批链<div class="mobile-desc">决定商务节奏</div></td><td>接手人</td><td>确认最终拍板人与审批日期</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="handover-grid handover-grid--single tab-slice" data-tab-slice="notes">
+      
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">交接缺口</span>
+          <span class="badge badge--yellow">需补齐</span>
+        </div>
+        <div class="card-body">
+          <div class="gap-list">
+            <div class="gap-row"><div class="gap-row__title">预算拍板人态度未知</div><div class="gap-row__desc">影响：无法判断商务推进窗口；补齐方式：由周总引荐或核对审批流程</div></div><div class="gap-row"><div class="gap-row__title">回款记录未读取</div><div class="gap-row__desc">影响：历史合作风险无法确认；补齐方式：完整模式读取订单与回款</div></div><div class="gap-row"><div class="gap-row__title">关键历史与关系信息待补充</div><div class="gap-row__desc">影响：接手人可能遗漏关键人物背景、历史承诺或沟通敏感点；补齐方式：由原负责人补齐关键人物、承诺和关系变化事实</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-only mobile-stack">
+    <div class="card tab-slice is-active" data-tab-slice="overview">
+      <div class="card-header">
+        <span class="card-header__title">交接背景</span>
+        <span class="badge badge--yellow">接手起点</span>
+      </div>
+      <div class="card-body">
+        <div class="fact-list">
+          <div class="fact-row"><div class="fact-row__label">交接背景</div><div class="fact-row__value">原负责人岗位调整，客户进入方案评估关键期</div></div><div class="fact-row"><div class="fact-row__label">当前状态</div><div class="fact-row__value">POC 已通过，预算审批链尚未完全确认</div></div><div class="fact-row"><div class="fact-row__label">交接要求</div><div class="fact-row__value">原负责人需完成内部支持者和技术负责人的当面引荐</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card tab-slice is-active" data-tab-slice="overview">
+      <div class="card-header">
+        <span class="card-header__title">客户画像</span>
+        <span class="badge badge--blue">接手必读</span>
+      </div>
+      <div class="card-body">
+        <div class="mobile-info-grid">
+          <div class="mobile-info-item"><div class="mobile-info-label">行业</div><div class="mobile-info-value">高端装备制造</div></div><div class="mobile-info-item"><div class="mobile-info-label">规模</div><div class="mobile-info-value">集团型客户，约 2,000 人</div></div><div class="mobile-info-item"><div class="mobile-info-label">主要项目</div><div class="mobile-info-value">集团 CRM 升级</div></div><div class="mobile-info-item"><div class="mobile-info-label">当前阶段</div><div class="mobile-info-value">方案评估</div></div><div class="mobile-info-item"><div class="mobile-info-label">客户目标</div><div class="mobile-info-value">统一客户数据与销售预测</div></div>
+        </div>
+        <div class="mobile-info-note">客户基础事实已确认，营收和集团组织范围仍需核对。</div>
+      </div>
+    </div>
+
+    <div class="card tab-slice is-active" data-tab-slice="overview">
+      <div class="card-header">
+        <span class="card-header__title">关系温度</span>
+        <span class="badge badge--green">信任</span>
+      </div>
+      <div class="card-body">
+        <div class="temp-summary">
+          <div class="temp-summary__row">
+            <span class="temp-summary__label">整体关系</span>
+            <span class="temp-summary__value">+3</span>
+          </div>
+          <div class="temp-gauge">
+            <span class="temp-gauge__edge">敌</span>
+            <div class="temp-gauge__bar">
+              <div class="temp-gauge__fill" style="width: 80%;"></div>
+            </div>
+            <span class="temp-gauge__edge">铁杆</span>
+          </div>
+        </div>
+        <div class="kp-list">
+          <div class="kp-row"><div class="kp-person"><div class="kp--coach">周</div><div><div class="kp-name">周总 · 运营总监</div><div class="kp-role">内部支持者 · 需要原负责人当面引荐</div></div></div><div class="kp-score">+3 <span class="badge badge--green">确认</span></div></div><div class="kp-row"><div class="kp-person"><div class="kp--tb">陈</div><div><div class="kp-name">陈总 · 信息化负责人</div><div class="kp-role">技术把关人（TB） · 关注接口和数据安全</div></div></div><div class="kp-score">+1 <span class="badge badge--green">确认</span></div></div><div class="kp-row"><div class="kp-person"><div class="kp--eb">刘</div><div><div class="kp-name">刘总 · 财务副总</div><div class="kp-role">最终决策人（EB） · 尚未建立直接联系</div></div></div><div class="kp-score">未知 <span class="badge badge--yellow">推断</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card tab-slice" data-tab-slice="history">
+      <div class="card-header">
+        <span class="card-header__title">博弈编年</span>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          <div class="timeline-item"><div class="timeline-marker"><div class="timeline-item__dot timeline-item__dot--green"></div></div><div><div class="timeline-item__date">2026-05-20 · 确认</div><div class="timeline-item__title">客户启动 CRM 升级评估</div><div class="timeline-item__desc">运营部门牵头，周总成为主要推动者；交接影响：形成稳定内部支持者</div></div></div><div class="timeline-item"><div class="timeline-marker"><div class="timeline-item__dot timeline-item__dot--green"></div></div><div><div class="timeline-item__date">2026-06-26 · 确认</div><div class="timeline-item__title">POC 通过</div><div class="timeline-item__desc">业务侧反馈正向，技术侧要求补接口说明；交接影响：项目进入方案评估</div></div></div><div class="timeline-item"><div class="timeline-marker"><div class="timeline-item__dot timeline-item__dot--green"></div></div><div><div class="timeline-item__date">2026-07-10 · 确认</div><div class="timeline-item__title">接口说明承诺逾期</div><div class="timeline-item__desc">客户技术负责人再次催问；交接影响：接手后必须优先修复信任</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card tab-slice" data-tab-slice="history">
+      <div class="card-header">
+        <span class="card-header__title">竞品历史</span>
+        <span class="badge badge--yellow">存在明确竞品</span>
+      </div>
+      <div class="card-body">
+        <div class="mobile-row-list">
+          <div class="mobile-compact-row"><div><div class="mobile-title">竞品 A</div><div class="mobile-desc">方案比较 · 用集团实践和接口边界回应</div></div><span class="badge badge--green">确认</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section tab-slice" id="handover-notes" data-tab-slice="notes">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">交接备注（接手人必读）</span>
+        <span class="badge badge--red">关键</span>
+      </div>
+      <div class="card-body">
+        <div class="handover-note-grid">
+          <div class="handover-card"><div class="handover-card__label">待兑现承诺</div><div class="handover-card__content"><span class="callout-line"><strong>接口边界说明</strong>；逾期；售前三天内补齐</span><span class="callout-line"><strong>提供预算审批节点</strong>；进行中；由周总协助确认</span></div></div><div class="handover-card"><div class="handover-card__label">风险与不能踩的坑</div><div class="handover-card__content"><span class="callout-line"><strong>历史承诺逾期</strong>；接口说明尚未交付；先兑现再谈新增范围</span><span class="callout-line"><strong>预算决策链缺口</strong>；财务副总态度未知；通过周总确认进入路径</span></div></div><div class="handover-card"><div class="handover-card__label">第一周动作</div><div class="handover-card__content"><span class="callout-line"><strong>完成关键人当面引荐</strong>；原负责人/接手人；周总和陈总确认新接口人</span><span class="callout-line"><strong>交付接口边界说明</strong>；售前；客户技术负责人书面确认</span><span class="callout-line"><strong>补齐预算审批链</strong>；接手人；确认最终拍板人与审批日期</span></div></div><div class="handover-card"><div class="handover-card__label">交接缺口</div><div class="handover-card__content"><span class="callout-line"><strong>预算拍板人态度未知</strong>；无法判断商务推进窗口；由周总引荐或核对审批流程</span><span class="callout-line"><strong>回款记录未读取</strong>；历史合作风险无法确认；完整模式读取订单与回款</span><span class="callout-line"><strong>关键历史与关系信息待补充</strong>；接手人可能遗漏关键人物背景、历史承诺或沟通敏感点；由原负责人补齐关键人物、承诺和关系变化事实</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section tab-slice" id="data-quality" data-tab-slice="quality">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">数据来源与置信度</span>
+        <span class="badge">质量口径</span>
+      </div>
+      <div class="card-body">
+        <div class="handover-note-grid">
+          <div class="handover-card">
+            <div class="handover-card__label">数据覆盖</div>
+            <div class="handover-card__content"><div class="quality-tags"><span class="badge badge--green">客户：已读取</span><span class="badge badge--green">商机：已读取</span><span class="badge badge--green">联系人：已读取</span><span class="badge badge--green">跟进记录：已读取</span><span class="badge badge--green">待办/任务：已读取</span><span class="badge badge--green">需求/问题：已读取</span><span class="badge badge--red">会议：权限不足</span><span class="badge badge--green">竞品明细：已读取</span><span class="badge badge--yellow">合同/订单/回款：未触发查询</span><span class="badge badge--yellow">外部情报：未触发查询</span></div></div>
+          </div>
+          <div class="handover-card">
+            <div class="handover-card__label">参考来源</div>
+            <div class="handover-card__content">CRM 客户、商机、联系人和跟进记录；原负责人交接信息；必要外部情报</div>
+          </div>
+          <div class="handover-card">
+            <div class="handover-card__label">置信度说明</div>
+            <div class="handover-card__content">确认：有 CRM、客户原话或明确事件；推断：有行为证据；未知：当前证据不足。</div>
+          </div>
+          <div class="handover-card">
+            <div class="handover-card__label">数据截止</div>
+            <div class="handover-card__content">2026-07-13 17:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.querySelectorAll('.brief-tab').forEach((tab) => {
+    tab.addEventListener('click', (event) => {
+      event.preventDefault();
+      const target = tab.dataset.tabTarget;
+
+      document.querySelectorAll('.brief-tab').forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      document.querySelectorAll('[data-tab-slice]').forEach((panel) => {
+        panel.classList.toggle('is-active', panel.dataset.tabSlice === target);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>赵丹Mandy 个人日报 - 2026-05-26</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --accent: #ffb400;
+      --accent-soft: #fff8db;
+      --accent-line: #ffe08a;
+      --text: #111827;
+      --text-soft: #374151;
+      --muted: #6b7280;
+      --faint: #9ca3af;
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --card-soft: #fbfcfe;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --green: #059669;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --amber: #d97706;
+      --toc-width: 236px;
+      --radius: 8px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+      color: var(--text-soft);
+      background:
+        linear-gradient(180deg, #ffffff 0, var(--bg) 320px),
+        var(--bg);
+    }
+    .app-shell {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 24px 56px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 0 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(17, 24, 39, .08);
+      flex: 0 0 auto;
+    }
+    .brand-text {
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--text);
+      letter-spacing: 0;
+    }
+    .topbar-meta {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      display: inline-block;
+    }
+    .meta-chip,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 22px;
+      padding: 30px 0 26px;
+      align-items: stretch;
+    }
+    .hero-main {
+      min-width: 0;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-size: 34px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 15px;
+      margin: 0;
+    }
+    .context-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .context-row span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 3px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .78);
+    }
+    .health-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      padding: 18px;
+      box-shadow: 0 16px 40px rgba(17, 24, 39, .05);
+      align-self: stretch;
+    }
+    .health-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      margin-bottom: 12px;
+    }
+    .health-score {
+      color: var(--text);
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 820;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .health-grade {
+      display: inline-flex;
+      margin-top: 10px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+      color: #7c5a00;
+      font-size: 12px;
+      font-weight: 760;
+    }
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .pill-slate { background: #f3f4f6; color: #4b5563; }
+    .pill-amber { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .pill-blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .layout {
+      display: grid;
+      grid-template-columns: var(--toc-width) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .toc {
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .82);
+      backdrop-filter: blur(10px);
+    }
+    .toc-title {
+      margin: 2px 0 10px;
+      color: var(--faint);
+      font-size: 11px;
+      font-weight: 760;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .toc a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 6px 8px;
+      color: var(--muted);
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .toc a::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #d1d5db;
+      flex: 0 0 auto;
+    }
+    .toc a:hover,
+    .toc a.active {
+      color: var(--text);
+      background: #f3f4f6;
+    }
+    .toc a:hover::before,
+    .toc a.active::before {
+      background: var(--accent);
+    }
+    .content {
+      min-width: 0;
+    }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 24px rgba(17, 24, 39, .035);
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      color: var(--text);
+      font-size: 19px;
+      line-height: 1.3;
+      font-weight: 780;
+      letter-spacing: 0;
+    }
+    .section-title .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .section-title::after {
+      content: "";
+      height: 2px;
+      flex: 1 1 auto;
+      background: linear-gradient(90deg, var(--accent), rgba(255, 180, 0, 0));
+      min-width: 40px;
+    }
+    .brief-box {
+      background: var(--card-soft);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .brief-box p { margin: 0 0 10px; }
+    .brief-box p:last-child { margin-bottom: 0; }
+    .summary-grid,
+    .metric-grid,
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .summary-card,
+    .metric-card,
+    .action-card,
+    .diagnosis-card,
+    .feature-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--card-soft);
+    }
+    .summary-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .summary-card::before,
+    .metric-card::before,
+    .feature-card::before {
+      content: "";
+      display: block;
+      width: 28px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--accent);
+      margin-bottom: 10px;
+    }
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+      margin-bottom: 4px;
+    }
+    .value {
+      color: var(--text);
+      font-weight: 780;
+    }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      font-size: 13px;
+    }
+    th {
+      background: #f9fafb;
+      padding: 10px 12px;
+      text-align: left;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #eef2f7;
+      color: var(--text-soft);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: 0; }
+    ul { margin: 0; padding-left: 20px; }
+    li + li { margin-top: 8px; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 780;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .tag-p0 { background: #fef2f2; color: var(--red); border-color: #fecaca; }
+    .tag-p1 { background: #fffbeb; color: var(--amber); border-color: #fde68a; }
+    .tag-p2 { background: #eff6ff; color: var(--blue); border-color: #bfdbfe; }
+    .alert-box {
+      border-radius: var(--radius);
+      padding: 13px 15px;
+      margin: 12px 0;
+      font-size: 13px;
+      line-height: 1.75;
+      border: 1px solid var(--border);
+    }
+    .alert-red { background: #fff7f7; border-color: #fecaca; color: #991b1b; }
+    .alert-amber { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+    .alert-blue { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+    .compact-list {
+      display: grid;
+      gap: 10px;
+    }
+    .compact-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      background: #fff;
+    }
+    .compact-item strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .period-daily .health-panel {
+      box-shadow: none;
+      background: linear-gradient(180deg, #fff 0, #fffdf4 100%);
+      align-self: start;
+      min-height: 0;
+    }
+    .period-daily .section {
+      box-shadow: none;
+    }
+    .period-daily .metric-grid,
+    .period-daily .summary-grid {
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    }
+    .period-weekly .section-title .num {
+      background: var(--accent-soft);
+      border-color: var(--accent-line);
+    }
+    .period-monthly .health-panel {
+      background: linear-gradient(180deg, #fff 0, #f8fbff 100%);
+    }
+    .period-monthly .summary-card::before,
+    .period-monthly .metric-card::before,
+    .period-monthly .feature-card::before {
+      background: #2563eb;
+    }
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .action-card {
+      min-width: 0;
+      background: #fff;
+    }
+    .action-card h3 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .p0 { border-top: 3px solid var(--red); }
+    .p1 { border-top: 3px solid var(--amber); }
+    .p2 { border-top: 3px solid var(--blue); }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      box-shadow: none;
+    }
+    @media (max-width: 1080px) {
+      .app-shell { padding: 22px 18px 46px; }
+      .hero { grid-template-columns: 1fr; }
+      .health-panel { max-width: none; }
+      .layout { display: block; }
+      .toc { display: none; }
+    }
+    @media (max-width: 760px) {
+      .app-shell { padding: 18px 12px 38px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .topbar-meta { justify-content: flex-start; }
+      .hero { padding: 24px 0 20px; }
+      h1 { font-size: 26px; }
+      .subtitle { font-size: 14px; }
+      .section { padding: 16px; margin-bottom: 14px; }
+      .section-title { font-size: 17px; }
+      .section-title::after { display: none; }
+      .summary-grid,
+      .metric-grid,
+      .feature-grid,
+      .action-grid { grid-template-columns: 1fr; }
+      .health-score { font-size: 38px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .app-shell { max-width: none; padding: 0; }
+      .topbar,
+      .toc { display: none; }
+      .hero { grid-template-columns: 1fr 220px; padding: 18px 0; }
+      .section {
+        break-inside: avoid;
+        box-shadow: none;
+        border-color: #d1d5db;
+      }
+    }
+  </style>
+</head>
+<body class="period-daily">
+  <div class="app-shell">
+    <header>
+      <div class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-text">个人销售经营复盘</span>
+        </div>
+        <div class="topbar-meta">
+          <span class="meta-chip"><span class="status-dot"></span>个人日报</span>
+          <span class="meta-chip">2026-05-26</span>
+        </div>
+      </div>
+
+      <section class="hero">
+        <div class="hero-main">
+          <div class="eyebrow"><span class="status-dot"></span>个人日报速览 · 今日执行闭环</div>
+          <h1>赵丹Mandy 个人日报 - 2026-05-26</h1>
+          <p class="subtitle">聚焦今日有效结果、CRM 数据覆盖、待办闭环、短周期风险和明日第一动作；数据缺失时也给出可执行补录与排查动作。</p>
+          <div class="context-row" aria-label="报告基础信息">
+            <span>赵丹Mandy · 销售部</span>
+            <span>CRM模拟查询：连续两日无数据</span>
+          </div>
+          <div class="tag-row">
+            <span class="pill pill-amber">CRM连续缺失2日</span><span class="pill pill-slate">销售记录0条</span><span class="pill pill-slate">日程0条</span><span class="pill pill-blue">明日P0 2项</span>
+          </div>
+        </div>
+        <aside class="health-panel" aria-label="今日闭环度">
+          <div class="health-label">今日闭环度</div>
+          <div class="health-score">待确认</div>
+          <div class="health-grade">信息不足 · 需补录和排查</div>
+        </aside>
+      </section>
+    </header>
+
+    <div class="layout">
+      <aside class="toc">
+        <div class="toc-title">报告目录</div>
+        <a href="#summary" class="active">今日摘要</a>
+        <a href="#metrics">今日执行信号</a>
+        <a href="#results">今日结果</a>
+        <a href="#opportunities">重点跟进</a>
+        <a href="#risks">今日风险</a>
+        <a href="#actions">明日行动</a>
+        <a href="#review">待办与数据说明</a>
+      </aside>
+
+      <main class="content">
+        <section class="section" id="summary">
+          <h2 class="section-title"><span class="num">01</span>今日摘要</h2>
+          <div class="brief-box">
+            <p>昨日 CRM 未查询到赵丹Mandy的销售记录、日程、商机推进、订单或回款数据，且今日同样为空，已形成连续两日数据缺失。当前无法判断昨日是否有客户活动和承诺闭环，最大风险是工作过程不可追溯；明日第一动作是补录近两日客户活动并排查是否存在同步异常。</p>
+          </div>
+          <div class="summary-grid" style="margin-top: 14px;">
+            <div class="summary-card"><span class="label">今日有效结果</span><div class="value">CRM 未查询到，待确认</div></div><div class="summary-card"><span class="label">最大风险</span><div class="value">连续两日数据缺失</div></div><div class="summary-card"><span class="label">明日第一动作</span><div class="value">补录近两日客户活动</div></div><div class="summary-card"><span class="label">待办闭环</span><div class="value">无法完整对账</div></div>
+          </div>
+        </section>
+
+        <section class="section" id="metrics">
+          <h2 class="section-title"><span class="num">02</span>今日执行信号</h2>
+          <div class="metric-card"><span class="label">销售记录</span><div class="value">0条</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">昨日与今日均未查询到</p></div><div class="metric-card"><span class="label">日程</span><div class="value">0条</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">无法核对会议/拜访安排</p></div><div class="metric-card"><span class="label">商机变化</span><div class="value">0条</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">未查询到阶段、金额或赢率变化</p></div><div class="metric-card"><span class="label">订单/回款</span><div class="value">0条</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">未查询到成交或回款记录</p></div><div class="metric-card"><span class="label">日志</span><div class="value">0条</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">未找到上期日志，无法对账承诺</p></div><div class="metric-card"><span class="label">数据风险</span><div class="value">中</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">连续两日空白，需排查录入或同步</p></div>
+        </section>
+
+        <section class="section" id="results">
+          <h2 class="section-title"><span class="num">03</span>今日结果</h2>
+          <div class="compact-list"><div class="compact-item"><strong>CRM 未查询到昨日关键成果</strong><span>销售记录、日程、商机、订单、回款均为0条。若昨日有客户拜访、电话、会议、资料交付或商机推进，需要补录后重新生成日报。</span></div><div class="compact-item"><strong>待确认事项</strong><span>是否存在未录入客户活动、CRM 同步延迟，或昨日确无客户活动。当前不能将“无数据”直接判定为“无工作”。</span></div><div class="compact-item"><strong>执行价值判断</strong><span>日报结论暂以“信息不足”处理，优先保证工作过程可追溯，再判断实际产出。</span></div></div>
+        </section>
+
+        <section class="section" id="opportunities">
+          <h2 class="section-title"><span class="num">04</span>重点跟进</h2>
+          <div class="compact-list"><div class="compact-item"><strong>重点跟进记录待补录</strong><span>CRM 未查询到昨日跟进记录。请确认是否有客户拜访、电话沟通、在线会议、方案发送、报价、合同/法务沟通等未录入事项。</span></div><div class="compact-item"><strong>商机 Pipeline 待检查</strong><span>未查询到昨日商机阶段变化。明日需检查负责商机是否存在阶段停滞、预计签约时间变化或关键联系人未回复。</span></div><div class="compact-item"><strong>客户触达计划待确认</strong><span>需列出至少2个今日/明日重点跟进对象及具体动作，避免连续空白影响周报复盘。</span></div></div>
+        </section>
+
+        <section class="section" id="risks">
+          <h2 class="section-title"><span class="num">05</span>今日风险</h2>
+          <div class="alert-box alert-amber"><strong>CRM 数据连续缺失：</strong>等级：中。依据：5/26 与 5/27 连续两日销售记录、日程、商机、订单、回款和日志均为0条。已动作：已全面查询 CRM 各对象。下一步：今日18:00前补录近两日客户活动，或确认是否存在系统同步异常。</div>
+        </section>
+
+        <section class="section" id="actions">
+          <h2 class="section-title"><span class="num">06</span>明日行动</h2>
+          <div class="action-grid">
+            <div class="action-card p0">
+              <h3><span class="tag tag-p0">P0</span> 必须完成</h3>
+              <ul><li>CRM 数据补录：补录5/26和5/27所有客户跟进记录、日程和商机推进情况。目标：CRM可追溯近两日工作。验证标准：至少可查询到2条销售记录或明确确认无客户活动。截止：今日18:00。结果类型：承诺兑现。</li><li>确认今日重点客户跟进：梳理今日需跟进的客户和商机。目标：明确今日P0对象和动作。验证标准：列出至少2个重点跟进对象及具体动作。截止：今日10:00。结果类型：阶段推进。</li></ul>
+            </div>
+            <div class="action-card p1">
+              <h3><span class="tag tag-p1">P1</span> 重点推进</h3>
+              <ul><li>检查近期商机 Pipeline：确认负责商机是否有阶段停滞、预计签约时间变化或关键联系人未回复。验证标准：完成商机检查并标记需关注项。截止：今日12:00。</li></ul>
+            </div>
+            <div class="action-card p2">
+              <h3><span class="tag tag-p2">P2</span> 持续跟进</h3>
+              <ul><li>整理本周客户触达计划：形成本周剩余工作日客户触达清单，确保客户覆盖无遗漏。截止：今日18:00。</li></ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="review">
+          <h2 class="section-title"><span class="num">07</span>待办与数据说明</h2>
+          <div class="compact-list"><div class="compact-item"><strong>已完成</strong><span>CRM 未查询到昨日日程或任务数据，无法确认已完成事项。</span></div><div class="compact-item"><strong>未完成/延期</strong><span>无法判断。未找到上期日志或承诺，无法完整对账。</span></div><div class="compact-item"><strong>待确认</strong><span>昨日所有客户活动状态待确认，优先确认是否为录入遗漏或系统同步问题。</span></div><div class="compact-item"><strong>执行提醒</strong><span>先补录和确认数据，再判断真实产出；不要用“无数据”替代日报复盘。</span></div></div>
+          <div class="section note" style="margin: 14px 0 0;">
+            <p>人员/部门：赵丹Mandy，销售部。CRM 数据：日志0条、销售记录0条、日程0条、商机0条、订单0条、回款0条。CRM 未查询到昨日（2026-05-26）数据，且今日（2026-05-27）同样为空，连续两日数据缺失；未找到上期日志，无法完整对账。</p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

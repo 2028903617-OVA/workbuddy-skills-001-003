@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>客户交接简报 - {{customer_name}}</title>
+  <link rel="stylesheet" href="../styles/handover.css">
+</head>
+<body data-template-id="sfa-account-handover-briefing-v1" data-template-version="1.0" data-report-mode="{{report_mode}}" data-preview="{{preview_mode}}">
+
+<!--
+  Team handover briefing template.
+  Keep the 0703 visual system and replace every template placeholder from the same
+  handover_facts_bundle used for the Markdown output. Do not leave sample data.
+-->
+
+<header class="topbar desktop-only">
+  <div class="topbar__left">
+    <div class="topbar__customer">{{customer_name}}</div>
+    <div class="topbar__meta">
+      <span class="badge badge--yellow">{{handover_status}}</span>
+      <span>{{opportunity_status}}</span>
+      <span>·</span>
+      <span>{{opportunity_amount}}</span>
+      <span>·</span>
+      <span>接手人：{{new_owner}}</span>
+    </div>
+  </div>
+
+  <div class="topbar__divider"></div>
+
+  <div class="topbar__center">
+    <div class="topbar__info-block">
+      <div class="topbar__info-label">行业·规模</div>
+      <div class="topbar__info-value">{{industry_or_segment}}</div>
+    </div>
+    <div class="topbar__divider"></div>
+    <div class="topbar__info-block">
+      <div class="topbar__info-label">交接原因</div>
+      <div class="topbar__info-value text-blue">{{handover_reason}}</div>
+    </div>
+    <div class="topbar__divider"></div>
+    <div class="topbar__info-block">
+      <div class="topbar__info-label">原负责人</div>
+      <div class="topbar__info-value">{{original_owner}}</div>
+    </div>
+    <div class="topbar__divider"></div>
+    <div class="topbar__info-block topbar__info-block--status">
+      <div class="topbar__info-label">交接状态</div>
+      <div class="topbar__info-value">{{handover_score_label}}</div>
+    </div>
+  </div>
+</header>
+
+<main class="main-content">
+  <div class="mobile-status-bar mobile-only">
+    <div class="mobile-status-bar__left">
+      <div class="mobile-status-bar__customer">{{customer_name}}</div>
+      <div class="mobile-status-bar__meta">
+        <span class="badge badge--yellow">{{handover_status}}</span>
+        <span>{{opportunity_status}}</span>
+        <span>·</span>
+        <span>{{opportunity_amount}}</span>
+      </div>
+    </div>
+    <div class="mobile-status-bar__status">
+      <div class="mobile-status-bar__label">交接状态</div>
+      <div class="mobile-status-bar__score">
+        <span>{{handover_score_label}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-banner">
+    <div class="alert-banner__icon" aria-hidden="true"></div>
+    <div>
+      <div class="alert-banner__title">{{alert_title}}</div>
+      <div class="alert-banner__body">{{alert_body}}</div>
+      <div class="alert-banner__action">{{alert_action}}</div>
+    </div>
+  </div>
+
+  <div class="score-section" id="handover-quality-signals">
+    <div class="score-section__title">交接质量信号</div>
+    <div class="score-gauges--mobile">
+      <div class="gauge {{information_signal_class}}">
+        <div class="gauge__header">
+          <span class="gauge__label">信息完整度</span>
+          <span class="gauge__value">{{information_completeness_score}}</span>
+        </div>
+        <div class="gauge__bar"><div class="gauge__fill" style="width: {{information_completeness_pct}}%;"></div></div>
+        <div class="gauge__note">{{information_completeness_note}}</div>
+      </div>
+
+      <div class="gauge {{relationship_signal_class}}">
+        <div class="gauge__header">
+          <span class="gauge__label">关系温度</span>
+          <span class="gauge__value">{{relationship_temperature_score}}</span>
+        </div>
+        <div class="gauge__bar"><div class="gauge__fill" style="width: {{relationship_temperature_pct}}%;"></div></div>
+        <div class="gauge__note">{{relationship_temperature_note}}</div>
+      </div>
+
+      <div class="gauge {{competition_signal_class}}">
+        <div class="gauge__header">
+          <span class="gauge__label">竞品风险</span>
+          <span class="gauge__value">{{competitive_risk_score}}</span>
+        </div>
+        <div class="gauge__bar"><div class="gauge__fill" style="width: {{competitive_risk_pct}}%;"></div></div>
+        <div class="gauge__note">{{competitive_risk_note}}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <nav class="brief-tabs" aria-label="交接简报分页">
+    <a class="brief-tab is-active" href="#handover-overview" data-tab-target="overview" aria-selected="true">概览</a>
+    <a class="brief-tab" href="#handover-history" data-tab-target="history" aria-selected="false">历程与竞争</a>
+    <a class="brief-tab" href="#handover-notes" data-tab-target="notes" aria-selected="false">交接备注</a>
+    <a class="brief-tab" href="#data-quality" data-tab-target="quality" aria-selected="false">数据质量</a>
+  </nav>
+
+  <div class="summary-section tab-slice is-active" id="handover-summary" data-tab-slice="overview">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">接手人必读摘要</span>
+        <span class="badge badge--yellow">第一屏结论</span>
+      </div>
+      <div class="card-body">
+        <div class="handover-summary">
+          <div class="handover-summary__headline">{{one_sentence_conclusion}}</div>
+          <div class="handover-summary-grid">
+            {{handover_summary_cards}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="desktop-only pc-section">
+    <div class="overview-stack tab-slice is-active" id="handover-overview" data-tab-slice="overview">
+      <div class="overview-column">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header__title">交接背景</span>
+            <span class="badge badge--yellow">{{handover_urgency}}</span>
+          </div>
+          <div class="card-body">
+            <div class="fact-list">
+              {{handover_context_facts}}
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header__title">关系温度</span>
+            <span class="badge badge--green">{{relationship_overall_label}}</span>
+          </div>
+          <div class="card-body">
+            <div class="temp-summary">
+              <div class="temp-summary__row">
+                <span class="temp-summary__label">整体关系</span>
+                <span class="temp-summary__value">{{relationship_overall_score}}</span>
+              </div>
+              <div class="temp-gauge">
+                <span class="temp-gauge__edge">敌对</span>
+                <div class="temp-gauge__bar">
+                  <div class="temp-gauge__fill" style="width: {{relationship_overall_pct}}%;"></div>
+                </div>
+                <span class="temp-gauge__edge">铁杆</span>
+              </div>
+            </div>
+            <div class="kp-list">
+              {{relationship_people_rows}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="overview-column">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header__title">客户画像</span>
+            <span class="badge badge--blue">接手必读</span>
+          </div>
+          <div class="card-body">
+            <div class="sidebar-info-grid">
+              {{account_profile_items}}
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-header__title">待兑现承诺</span>
+            <span class="badge badge--red">接手优先</span>
+          </div>
+          <div class="card-body">
+            <div class="commitment-list">
+              {{commitment_rows}}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="handover-grid tab-slice" id="handover-history" data-tab-slice="history">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">博弈编年</span>
+          <span class="badge badge--green">关键节点</span>
+        </div>
+        <div class="card-body">
+          <div class="timeline">
+            {{timeline_items}}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">竞品历史</span>
+          <span class="badge badge--yellow">{{competitive_status_label}}</span>
+        </div>
+        <div class="card-body">
+          <div class="comp-table-wrap">
+            <table class="comp-table">
+              <thead>
+                <tr>
+                  <th>竞品</th>
+                  <th>介入时间</th>
+                  <th>竞争阶段</th>
+                  <th>应对策略</th>
+                  <th>结果</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{competitive_rows}}
+              </tbody>
+            </table>
+          </div>
+          <div class="table-note">
+            <strong>接手人注意：</strong>{{competitive_note}}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="handover-grid tab-slice" data-tab-slice="notes">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">风险与敏感点</span>
+          <span class="badge badge--red">不能踩坑</span>
+        </div>
+        <div class="card-body">
+          <div class="risk-list">
+            {{risk_rows}}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">接手建议</span>
+          <span class="badge badge--green">第一周</span>
+        </div>
+        <div class="card-body">
+          <div class="action-table-wrap">
+            <table class="action-table">
+              <thead>
+                <tr>
+                  <th>优先级</th>
+                  <th>动作</th>
+                  <th>负责人</th>
+                  <th>完成标准</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{first_week_action_rows}}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="handover-grid{{financial_grid_class}} tab-slice" data-tab-slice="notes">
+      {{financial_section}}
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header__title">交接缺口</span>
+          <span class="badge badge--yellow">需补齐</span>
+        </div>
+        <div class="card-body">
+          <div class="gap-list">
+            {{handover_gap_rows}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mobile-only mobile-stack">
+    <div class="card tab-slice is-active" data-tab-slice="overview">
+      <div class="card-header">
+        <span class="card-header__title">交接背景</span>
+        <span class="badge badge--yellow">接手起点</span>
+      </div>
+      <div class="card-body">
+        <div class="fact-list">
+          {{mobile_handover_context_facts}}
+        </div>
+      </div>
+    </div>
+
+    <div class="card tab-slice is-active" data-tab-slice="overview">
+      <div class="card-header">
+        <span class="card-header__title">客户画像</span>
+        <span class="badge badge--blue">接手必读</span>
+      </div>
+      <div class="card-body">
+        <div class="mobile-info-grid">
+          {{mobile_account_profile_items}}
+        </div>
+        <div class="mobile-info-note">{{mobile_account_profile_note}}</div>
+      </div>
+    </div>
+
+    <div class="card tab-slice is-active" data-tab-slice="overview">
+      <div class="card-header">
+        <span class="card-header__title">关系温度</span>
+        <span class="badge badge--green">{{relationship_overall_label}}</span>
+      </div>
+      <div class="card-body">
+        <div class="temp-summary">
+          <div class="temp-summary__row">
+            <span class="temp-summary__label">整体关系</span>
+            <span class="temp-summary__value">{{relationship_overall_score}}</span>
+          </div>
+          <div class="temp-gauge">
+            <span class="temp-gauge__edge">敌</span>
+            <div class="temp-gauge__bar">
+              <div class="temp-gauge__fill" style="width: {{relationship_overall_pct}}%;"></div>
+            </div>
+            <span class="temp-gauge__edge">铁杆</span>
+          </div>
+        </div>
+        <div class="kp-list">
+          {{mobile_relationship_rows}}
+        </div>
+      </div>
+    </div>
+
+    <div class="card tab-slice" data-tab-slice="history">
+      <div class="card-header">
+        <span class="card-header__title">博弈编年</span>
+      </div>
+      <div class="card-body">
+        <div class="timeline">
+          {{mobile_timeline_items}}
+        </div>
+      </div>
+    </div>
+
+    <div class="card tab-slice" data-tab-slice="history">
+      <div class="card-header">
+        <span class="card-header__title">竞品历史</span>
+        <span class="badge badge--yellow">{{competitive_status_label}}</span>
+      </div>
+      <div class="card-body">
+        <div class="mobile-row-list">
+          {{mobile_competitive_rows}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section tab-slice" id="handover-notes" data-tab-slice="notes">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">交接备注（接手人必读）</span>
+        <span class="badge badge--red">关键</span>
+      </div>
+      <div class="card-body">
+        <div class="handover-note-grid">
+          {{handover_note_cards}}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-section tab-slice" id="data-quality" data-tab-slice="quality">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">数据来源与置信度</span>
+        <span class="badge">质量口径</span>
+      </div>
+      <div class="card-body">
+        <div class="handover-note-grid">
+          <div class="handover-card">
+            <div class="handover-card__label">数据覆盖</div>
+            <div class="handover-card__content">{{data_coverage}}</div>
+          </div>
+          <div class="handover-card">
+            <div class="handover-card__label">参考来源</div>
+            <div class="handover-card__content">{{reference_note}}</div>
+          </div>
+          <div class="handover-card">
+            <div class="handover-card__label">置信度说明</div>
+            <div class="handover-card__content">{{confidence_note}}</div>
+          </div>
+          <div class="handover-card">
+            <div class="handover-card__label">数据截止</div>
+            <div class="handover-card__content">{{data_updated_at}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.querySelectorAll('.brief-tab').forEach((tab) => {
+    tab.addEventListener('click', (event) => {
+      event.preventDefault();
+      const target = tab.dataset.tabTarget;
+
+      document.querySelectorAll('.brief-tab').forEach((item) => {
+        const active = item === tab;
+        item.classList.toggle('is-active', active);
+        item.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+
+      document.querySelectorAll('[data-tab-slice]').forEach((panel) => {
+        panel.classList.toggle('is-active', panel.dataset.tabSlice === target);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

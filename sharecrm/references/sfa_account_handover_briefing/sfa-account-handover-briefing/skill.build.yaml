@@ -1,0 +1,53 @@
+version: 1
+skill:
+  name: sfa-account-handover-briefing
+  source: SKILL.md
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - "references/**"
+    - "rules/**"
+    - "assets/**"
+    - "scripts/**"
+    - "memory/**"
+dependencies:
+  references: []
+  scripts:
+    - scripts/render_handover_briefing.py
+    - scripts/validate_handover_briefing.py
+  assets: []
+build:
+  builder_version: v1
+  built_at: "2026-07-13T00:00:00+08:00"
+  source_dir: journalbriefing/sfa-account-handover-briefing
+  package: zip
+  included_files:
+    - SKILL.md
+    - assets/styles/handover.css
+    - assets/templates/handover.html
+    - assets/templates/handover_mock_preview.html
+    - memory/template.md
+    - references/cli_reference.md
+    - references/competitive_reference.md
+    - references/crm_schema.md
+    - references/industry_benchmarks.md
+    - references/html_render_contract.md
+    - references/shared/crm_query_status.md
+    - references/shared/external_intelligence_sources.md
+    - references/shared/html_output_quality_gate.md
+    - references/shared/report_data_sources.md
+    - references/shared/sharecrm_cli_min_loop.md
+    - rules/R01_handover_context.md
+    - rules/R02_account_snapshot.md
+    - rules/R03_game_timeline.md
+    - rules/R04_relationship_map.md
+    - rules/R05_commitment_ledger.md
+    - rules/R06_risk_sensitive_points.md
+    - rules/R07_competitive_history.md
+    - rules/R08_handover_output.md
+    - rules/R09_financial_health.md
+    - scripts/render_handover_briefing.py
+    - scripts/validate_handover_briefing.py
+  resolved_dependencies: []
+  constraints: {}

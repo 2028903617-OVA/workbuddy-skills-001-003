@@ -1,0 +1,14 @@
+version: 1
+
+skill:
+  name: sfa-opportunity-stage
+  source: SKILL.md
+
+release:
+  package: zip
+  include:
+    - SKILL.md
+
+dependencies:
+  references: []
+  scripts: []

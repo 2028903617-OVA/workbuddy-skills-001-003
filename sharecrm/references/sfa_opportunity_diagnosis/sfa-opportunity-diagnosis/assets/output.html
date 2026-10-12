@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>招商银行核心下移项目 - AI 诊断报告</title>
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#1d4ed8;--primary-deep:#163a63;--primary-light:#eff6ff;--text:#1f2937;--text-muted:#6b7280;--bg:#f5f7fb;--card:#ffffff;--border:#e5e7eb;--toc-width:236px}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:#334155;line-height:1.65;padding:0}
+.cover{background:linear-gradient(135deg,#0f172a 0%,#163a63 45%,#1d4ed8 100%);color:#fff;padding:28px 20px 0;position:relative;overflow:hidden}
+.cover-inner{max-width:1320px;margin:0 auto;padding:24px 28px 30px;border-radius:18px 18px 0 0;position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a 0%,#163a63 45%,#1d4ed8 100%)}
+.cover-inner::after{content:"";position:absolute;right:-90px;top:-90px;width:340px;height:340px;border-radius:50%;background:rgba(255,255,255,.05)}
+.cover-head{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:24px}.eyebrow{font-size:13px;letter-spacing:3px;text-transform:uppercase;opacity:.72;margin-bottom:12px}.cover h1{font-size:32px;font-weight:700;margin-bottom:10px}.subtitle{font-size:15px;opacity:.82;margin-bottom:24px}
+.cover-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 28px;font-size:13px;opacity:.88;position:relative;z-index:1}.cover-meta div{display:flex;gap:8px}.cover-meta dt{opacity:.65;white-space:nowrap}.cover-meta dd{font-weight:500}
+.pill-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;position:relative;z-index:1}.pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}.pill-slate{background:#e2e8f0;color:#475569}.pill-amber{background:#fef3c7;color:#b45309}
+.layout{display:flex;max-width:1320px;margin:0 auto;min-height:100vh}.toc{width:var(--toc-width);flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 16px 28px 24px;background:var(--card);border-right:1px solid var(--border)}.toc-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:16px}.toc a{display:block;padding:7px 10px;color:var(--text-muted);text-decoration:none;border-radius:6px;margin-bottom:2px;transition:all .15s;border-left:2px solid transparent;font-size:13px}.toc a:hover{color:var(--primary);background:var(--primary-light)}.toc a.active{color:var(--primary);background:var(--primary-light);border-left-color:var(--primary);font-weight:600}
+.container{flex:1;min-width:0;max-width:none;margin:0;background:transparent;border-radius:0;box-shadow:none;overflow:visible}
+.header,.header-top{display:none}
+.win-rate-box{min-width:148px;text-align:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:16px 18px;backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}.win-rate-num{font-size:34px;font-weight:800;line-height:1;white-space:nowrap}.win-rate-denominator{font-size:18px;font-weight:700}.win-rate-grade{font-size:16px;font-weight:700;line-height:1.15;margin-top:6px}.win-rate-label{font-size:12px;opacity:.82;margin-top:6px}
+.content{padding:36px 40px 60px}.section{margin-bottom:32px}.section:last-child{margin-bottom:0}.section-title{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--primary);display:flex;align-items:center;gap:10px}.section-title .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:linear-gradient(135deg,var(--primary-deep),var(--primary));color:#fff;border-radius:8px;font-size:13px;font-weight:700;flex-shrink:0}
+.conclusion-box{background:var(--primary-light);border-left:4px solid var(--primary);border-radius:0 10px 10px 0;padding:20px 24px;margin-bottom:20px}.conclusion-box h3{font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px}.conclusion-box p{font-size:14px;color:#334155;line-height:1.8}.conclusion-box ul{list-style:none;margin:0;padding-left:0;font-size:14px;color:#334155;line-height:1.8}.conclusion-box li{margin:2px 0}.key-insight{font-size:14px;font-weight:600;color:var(--primary);margin:8px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}th{background:#f1f5f9;padding:10px 14px;text-align:left;font-weight:700;color:#475569;border-bottom:2px solid var(--border);font-size:12px;white-space:nowrap}td{padding:10px 14px;border-bottom:1px solid #eef2f7;color:#475569;vertical-align:top}tr:hover{background:#fafbff}.table-wrap{overflow-x:auto}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}.tag-p0{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}.tag-p1{background:#fffbeb;color:#d97706;border:1px solid #fde68a}.tag-p2{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}.tag-confirmed{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}.tag-inferred{background:#fffbeb;color:#d97706;border:1px solid #fde68a}.tag-unknown{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}.tag-h1{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}.tag-h2{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}.tag-h3{background:#fef9c3;color:#854d0e;border:1px solid #fde68a}
+.evidence-ref{font-size:11px;color:#94a3b8;font-style:italic}.alert-box{border-radius:10px;padding:14px 18px;margin:12px 0;font-size:13px;line-height:1.8}.alert-red{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}.alert-amber{background:#fffbeb;border:1px solid #fde68a;color:#92400e}.alert-blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+.tabbed-section{margin-bottom:32px}.tab-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.tab-btn{border:1px solid #bfdbfe;background:#f8fbff;color:#1e40af;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s ease}.tab-btn:hover{background:#eff6ff}.tab-btn.active{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border-color:#1e40af;box-shadow:0 6px 16px rgba(37,99,235,.18)}.tab-panel{display:none}.tab-panel.active{display:block}.tab-panel .section{margin-bottom:0}
+.footer-note{font-size:13px;color:#475569;margin-top:30px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:#fff}
+@media (max-width:1100px){.layout{display:block}.toc{display:none}.content{padding:28px 20px 48px}.cover{padding:20px 12px 0}.cover-inner{padding:22px 20px 26px;border-radius:16px 16px 0 0}.cover-head{display:block}.win-rate-box{margin-top:18px}}
+
+/* Unified light report theme. Header markup and content are intentionally unchanged. */
+:root{--primary:#1757e8;--primary-deep:#12369a;--primary-light:#edf3ff;--text:#202735;--text-muted:#687184;--bg:#f7f8fa;--border:#e1e5ec;--toc-width:360px}
+body{background:var(--bg);line-height:1.75;font-size:16px;padding:10px 18px 24px}.cover{max-width:1940px;margin:0 auto;padding:0;color:var(--text);background:transparent;overflow:visible}.cover-inner::after{display:none}.cover-inner{max-width:none;min-height:230px;padding:40px 46px;border:1px solid #dbe3ef;border-radius:18px;background:linear-gradient(110deg,#fff 0%,#fff 53%,#edf5ff 75%,#cbdcff 100%);box-shadow:0 2px 5px rgba(30,58,105,.1)}
+.eyebrow{margin-bottom:18px;color:#1c55df;font-size:14px;font-weight:700;letter-spacing:4px;opacity:1}.cover h1{margin-bottom:14px;color:#111827;font-size:34px;line-height:1.35;letter-spacing:0}.subtitle{margin-bottom:0;color:#687184;font-size:16px;opacity:1}
+.win-rate-box{min-width:214px;margin:4px 0 0;padding:23px 22px 20px;color:#12369a;background:rgba(244,248,255,.74);border:1px solid #a9c4f8;border-radius:24px;box-shadow:0 10px 30px rgba(66,105,181,.13);backdrop-filter:none}.win-rate-num{font-size:48px}.win-rate-denominator{font-size:20px}.win-rate-grade{font-size:17px}.win-rate-label{color:#687184;font-size:14px;opacity:1}
+.cover-meta{margin-top:24px;padding-top:18px;grid-template-columns:repeat(6,minmax(140px,1fr));gap:12px 24px;color:#556074;border-top:1px solid rgba(169,188,222,.45);font-size:13px;opacity:1}.cover-meta dt{color:#7a8496;opacity:1}.cover-meta dd{color:#354157;font-weight:600}.cover .pill-row{margin-top:18px}.cover .pill{border:1px solid rgba(169,188,222,.65)}
+.layout{max-width:1940px;margin:30px auto 0;min-height:0;align-items:flex-start;gap:30px}.toc{width:var(--toc-width);height:auto;max-height:calc(100vh - 40px);top:20px;padding:30px 22px 34px;border:1px solid var(--border);border-radius:18px;box-shadow:0 2px 5px rgba(30,41,59,.08)}.toc-title{margin:0 16px 18px;color:#606979;font-size:15px;letter-spacing:0}.toc a{margin-bottom:4px;padding:13px 16px;color:#70798a;border-left:3px solid transparent;border-radius:8px;font-size:15px}.toc a.active{color:var(--primary);background:#eaf1ff;border-left-color:var(--primary)}
+.container{background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 2px 5px rgba(30,41,59,.08);overflow:hidden}.content{padding:40px 44px 54px}.section,.tabbed-section{margin-bottom:50px}.section-title{margin-bottom:24px;padding-bottom:20px;color:#1c2430;border-bottom:1px solid #dfe3e9;font-size:23px}.section-title .num{width:40px;height:40px;color:var(--primary);background:#eff4ff;border:1px solid #d4e0ff;border-radius:10px;font-size:15px}
+.conclusion-box{margin-bottom:26px;padding:25px 30px;background:#edf3ff;border:1px solid #cfddff;border-left:4px solid var(--primary);border-radius:10px}.conclusion-box h3{margin-bottom:8px;color:var(--primary);font-size:16px}.conclusion-box p,.conclusion-box ul{color:#465166;font-size:15px}table{margin-top:0;border:0;border-radius:10px;font-size:14px}th{padding:14px 18px;color:#646c7c;background:#f6f7f9;border-bottom:1px solid #dfe3e9;font-size:13px}td{padding:16px 18px;color:#465166;border-bottom:1px solid #e8ebef;line-height:1.75}td:first-child{color:#202735;font-weight:700}tr:hover{background:#fafbfc}.tab-btn{border-radius:8px;padding:9px 16px}.tab-btn.active{background:#1757e8;box-shadow:none}.footer-note{border-color:#e1e5ec;border-radius:8px;box-shadow:none}
+@media(max-width:1100px){body{padding:10px}.layout{display:block;margin-top:16px}.toc{display:none}.container{border-radius:12px}.content{padding:28px 20px 48px}.cover{padding:0}.cover-inner{min-height:0;padding:24px 20px;border-radius:12px}.cover-head{display:block}.cover h1{font-size:26px}.win-rate-box{min-width:0;width:160px;margin-top:18px;border-radius:16px}.win-rate-num{font-size:40px}.cover-meta{grid-template-columns:1fr 1fr}.section-title{font-size:20px}.table-wrap{overflow-x:auto}.table-wrap table{min-width:760px}}
+
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-head">
+      <div>
+        <div class="eyebrow">Opportunity Diagnosis Report</div>
+        <h1>🏦 招商银行核心下移项目</h1>
+        <div class="subtitle">基于 CRM 商机事实、评分结果与诊断规则生成，用于支持推进判断与行动决策。</div>
+      </div>
+      <div class="win-rate-box">
+        <div class="win-rate-num">42<span class="win-rate-denominator">/100</span></div>
+        <div class="win-rate-grade">C级</div>
+        <div class="win-rate-label">商机健康度</div>
+      </div>
+    </div>
+    <dl class="cover-meta">
+      <div><dt>诊断日期</dt><dd>2026-06-10</dd></div>
+      <div><dt>行业</dt><dd>金融行业</dd></div>
+      <div><dt>客户名称</dt><dd>招商银行总行</dd></div>
+      <div><dt>预估金额</dt><dd>28,000,000 CNY</dd></div>
+      <div><dt>销售申报阶段</dt><dd>需求发掘阶段</dd></div>
+      <div><dt>AI判断阶段</dt><dd>方案深度论证中</dd></div>
+    </dl>
+    <div class="pill-row">
+      <span class="pill pill-slate">识别到 6 次高频架构探讨</span>
+      <span class="pill pill-amber">需关注阶段偏早风险</span>
+    </div>
+  </div>
+</div>
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">目录</div>
+    <a href="#section-overview" class="active">一、核心诊断结论</a>
+    <a href="#section-global">二、全局诊断结果</a>
+    <a href="#section-risk">三、关键卡点与风险暴露</a>
+    <a href="#section-strategy">四、核心打法策略</a>
+    <a href="#section-actions">五、30天关键行动计划</a>
+    <a href="#section-tabs">六、情报研判</a>
+  </aside>
+  <div class="container">
+    <div class="content">
+<!-- 一、结论摘要 -->
+<div class="section" id="section-overview">
+<div class="section-title"><span class="num">一</span>核心诊断结论</div>
+
+<div class="conclusion-box">
+<p><strong>一句话结论：</strong>这是一个有真实合规压力但决策链未打透、缺乏业务 Sponsor 支撑的高危商机。最大输点不是技术跑分，而是<strong>竞对 A 厂已通过同行案例对科技部完成"降维洗脑"</strong>，而我方极度缺乏高层信任。建议暂缓盲目堆料技术 POC，先补齐业务高管对话口子。</p>
+<div class="key-insight">赢单五要素：</div>
+<ul>
+<li>✅ 项目真实性：有明确 Sponsor（王总）和 POC 推进节点</li>
+<li>❌ Coach：无识别，无法获取内部信息</li>
+<li>❌ 决策链：仅 1 人录入系统，关键角色未覆盖</li>
+<li>❌ 竞争壁垒：竞品低价 + 低代码能力构成直接威胁</li>
+<li>⚠️ 控制点：POC 验收标准仅口头约定</li>
+</ul>
+<div class="key-insight">核心打法策略：</div>
+<p>风险兜底护航型为主，高层共识突破型为辅。围绕业务连续性、安全兜底和信创合规红线，把商机从技术跑分比较题改写成核心系统下移护航能力题。</p>
+<div class="key-insight">关键行动项：</div>
+<ul>
+<li>本周由战区总带队拜访王总，锁定纸质灾备演练共识纪要。</li>
+<li>两周内完成全信创组件核验，并将 POC 验收红线写入正式标准。</li>
+<li>30 天内建立科技部 Coach 与闭门攻防演练机制，摸清竞品、预算和决策链。</li>
+</ul>
+</div>
+</div>
+
+<!-- 二、全局诊断结果 -->
+<div class="section" id="section-global">
+<div class="section-title"><span class="num">二</span>全局诊断结果</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>评估维度</th><th style="text-align:center">评分</th><th>评分依据</th></tr></thead>
+<tbody>
+<tr><td>1. 项目真实性</td><td style="text-align:center;font-weight:700;color:#16a34a">80/100</td><td>年底需完成30%核心下移，但高层正式落地明细文件尚待明确。<span class="evidence-ref">来源：CRM商机记录 / 推断</span></td></tr>
+<tr><td>2. 业务价值</td><td style="text-align:center;font-weight:700;color:#16a34a">90/100</td><td>有明确降本增效场景，技术架构跑分全面碾压。<span class="evidence-ref">来源：POC技术报告 / H2</span></td></tr>
+<tr><td>3. 需求清晰度</td><td style="text-align:center;font-weight:700;color:#d97706">70/100</td><td>方向明确但缺乏书面兜底，"断崖熔断容灾方案"未显性化要求。<span class="evidence-ref">来源：销售记录 / 推断</span></td></tr>
+<tr><td>4. Sponsor / Coach</td><td style="text-align:center;font-weight:700;color:#dc2626">30/100</td><td>无 Coach。王总仅口头支持，无人提供内部动向情报。<span class="evidence-ref">来源：CRM联系人互动记录 / H1</span></td></tr>
+<tr><td>5. 决策链完整度</td><td style="text-align:center;font-weight:700;color:#d97706">50/100</td><td>已知技术李工与业务王总，但最终联合决策拍板权未确认。<span class="evidence-ref">来源：CRM联系人 / 推断</span></td></tr>
+<tr><td>6. 预算与时间窗口</td><td style="text-align:center;font-weight:700;color:#d97706">70/100</td><td>2800万预算相对充足，年底前必须完成验证上线。<span class="evidence-ref">来源：CRM商机 / H2</span></td></tr>
+<tr><td>7. 竞争态势</td><td style="text-align:center;font-weight:700;color:#dc2626">40/100</td><td>竞对A厂已深度渗透，正用同行失败案例降维施压。<span class="evidence-ref">来源：销售记录 + Coach线索 / H2</span></td></tr>
+<tr><td>8. 技术/安全/交付</td><td style="text-align:center;font-weight:700;color:#d97706">50/100</td><td>15%外企监控组件可能触发信创"一票否决"合规红线。<span class="evidence-ref">来源：方案评审 / H1</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- 三、关键卡点与风险暴露 -->
+<div class="section" id="section-risk">
+<div class="section-title"><span class="num">三</span>关键卡点与风险暴露</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>优先级</th><th>风险点</th><th>表面现象</th><th>深层判断</th></tr></thead>
+<tbody>
+<tr><td><span class="tag tag-p0">P0</span></td><td>无高层护航，盲目POC</td><td>拜访记录仅停留在架构组，王总仅口头支持POC未发力。</td><td><span class="tag tag-confirmed">已证实</span> 若无高层统筹，纯技术压测打动有限，POC通过依然无法签约。</td></tr>
+<tr><td><span class="tag tag-p0">P0</span></td><td>竞品深度越位施压</td><td>A厂向客户传递《同行迁移失败避坑指南》。</td><td><span class="tag tag-confirmed">已证实</span> 竞品企图避战纯性能跑分，利用软实力降维设定评估红线。</td></tr>
+<tr><td><span class="tag tag-p1">P1</span></td><td>项目阶段误判</td><td>CRM认定"方案深度论证"，但无固化红头需求书。</td><td><span class="tag tag-inferred">大概率发生</span> 业务方诉求和实际技术预算执行可能严重脱节。</td></tr>
+<tr><td><span class="tag tag-p2">P2</span></td><td>信创合规交付隐患</td><td>方案底层带有15%的跨国监控架构组件支持。</td><td><span class="tag tag-confirmed">已证实</span> 随金融大环境下探可能触发一票否决。</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- 四、核心打法策略 -->
+<div class="section" id="section-strategy">
+<div class="section-title"><span class="num">四</span>核心打法策略</div>
+<div class="alert-box alert-blue" style="margin-top:14px"><strong>一句话总结：</strong>策略换轨不是少讲技术。是换一种讲法。把技术优势翻译成高层能感知的安全感、合规感和兜底能力。把商机从技术比较题，改写成护航能力题。</div>
+
+<div style="display:grid;grid-template-columns:1fr 44px 1fr;gap:18px;margin-top:16px;align-items:stretch">
+<div style="border:1px solid #fecaca;border-radius:10px;padding:18px 20px;background:#fff7f7">
+<div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:10px">当前打法：还停留在技术对攻</div>
+<p style="font-size:13px;color:#64748b;line-height:1.8;margin-bottom:8px"><strong>我们现在在做什么：</strong>会议和物料高度集中在代码架构、性能比拼和跑分清单，试图用技术优势直接说服客户。</p>
+<p style="font-size:13px;color:#64748b;line-height:1.8;margin-bottom:8px"><strong>为什么不够：</strong>这种打法只能打动技术层，却无法给业务高层和合规侧真正的“签字安全感”。</p>
+<p style="font-size:13px;color:#991b1b;line-height:1.8"><strong>继续这样打的风险：</strong>会被 A 厂拖在它熟悉的求稳叙事里，越论证越像“技术供应商”，而不是“护航方”。</p>
+</div>
+<div style="display:flex;align-items:center;justify-content:center;font-size:24px;color:#1e40af;font-weight:800">→</div>
+<div style="border:1px solid #bbf7d0;border-radius:10px;padding:18px 20px;background:#f6fff8">
+<div style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:10px">换轨打法：升维到业务连续性护航</div>
+<p style="font-size:13px;color:#475569;line-height:1.8;margin-bottom:8px"><strong>新的对外定位：</strong>不是“底座更强的技术方”，而是“业务连续性首席护航专家”。</p>
+<p style="font-size:13px;color:#475569;line-height:1.8;margin-bottom:8px"><strong>新的切入重点：</strong>围绕王总等高层最担心的“全量切换导致系统熔断、业务中断、责任不可控”来组织方案与拜访。</p>
+<p style="font-size:13px;color:#166534;line-height:1.8"><strong>为什么这条路更可能赢：</strong>它同时打到业务连续性、安全兜底、信创边界三个层面，是 A 厂不容易跟进的高维战场。</p>
+</div>
+</div>
+</div>
+
+<!-- 五、行动建议 -->
+<div class="section">
+<div class="section-title"><span class="num">五</span>行动建议</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>优先级</th><th>动作</th><th>目的</th><th>时间</th><th>负责人/对象</th><th>完成标志</th></tr></thead>
+<tbody>
+<tr><td><span class="tag tag-p0">P0</span></td><td>由战区总带队，以"业务连续性高研"破冰拜访王总</td><td>建立高层业务连续性共识，推动 Sponsor 从口头支持转向实质拍板。</td><td>本周</td><td>业务部王总</td><td>签定纸质灾备演练共识纪要</td></tr>
+<tr><td><span class="tag tag-p0">P0</span></td><td>彻查并替换15%外企监控组件，启动全栈备用A+B测试</td><td>消除信创合规一票否决风险，补齐交付侧底线能力。</td><td>两周内</td><td>内审合规部</td><td>出具100%全信创白皮书核验证明</td></tr>
+<tr><td><span class="tag tag-p1">P1</span></td><td>递送《复杂高并发暗坑避险指南》设置红线阻击A厂</td><td>把竞争焦点从单点跑分拉升到连续性与合规红线。</td><td>两周内</td><td>科技部李工</td><td>核心红线参数落入正式入围标书</td></tr>
+<tr><td><span class="tag tag-p1">P1</span></td><td>请求总部支援，落编主导级金融下移大咖(Coach)下沉</td><td>补齐内部情报和高层攻防资源，建立可持续推进抓手。</td><td>30天内</td><td>战略大客BP</td><td>确定闭门攻防演练专家行程安排</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- 六、情报研判切换区 -->
+<div class="tabbed-section" id="section-tabs">
+<div class="section-title"><span class="num">六</span>情报研判</div>
+<div class="tab-nav">
+<button class="tab-btn active" type="button" data-tab-target="tab-demand">需求地图分析</button>
+<button class="tab-btn" type="button" data-tab-target="tab-competition">竞争态势分析</button>
+<button class="tab-btn" type="button" data-tab-target="tab-decision">决策链分析</button>
+</div>
+
+<div id="tab-demand" class="tab-panel active">
+<div class="section">
+<div class="conclusion-box" style="margin-top:16px">
+<p><strong>一句话总结：</strong>客户表面诉求是核心下移的平稳推进与技术能力达标，真实推动力是“连续性可控 + 决策责任可解释”，当前推进约束不在需求表达本身，而在高层共识、采购闭环和责任承接尚未完全形成。</p>
+<p style="margin-top:10px;color:#1e40af;font-weight:700">需求成熟度：中高</p>
+<p style="margin-top:6px;color:#1e40af;font-weight:700">当前我方命中度：部分命中</p>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>角色</th><th>核心诉求</th><th>痛点与红线</th><th>我方打动点</th></tr></thead>
+<tbody>
+<tr><td>💻 科技部 (李工)</td><td>平稳替换，不出锅，满足行内高并发指标</td><td>极度担心替换A厂组件引发连锁雪崩，不敢轻易签字</td><td>全栈自研架构 + 金融级容灾验证</td></tr>
+<tr><td>📈 业务保障部 (王总)</td><td>业务连续性，RTO/RPO达标，兜底演练真实有效</td><td>缺乏业务连续性兜底的安全感</td><td>全量切换极速止血方案 + 对赌协议</td></tr>
+<tr><td>🛡️ 内审合规部</td><td>100%全信创自主可控，彻底剥离外企黑盒组件</td><td>15%外企监控组件可能触发一票否决</td><td>联合排查合规隐患，建立防御红线</td></tr>
+</tbody>
+</table>
+</div>
+<div class="alert-box alert-blue" style="margin-top:14px"><strong>收口判断：</strong>当前问题不在客户没有需求，而在我方尚未把需求对到真正能推动决策的层级。后续打法不应继续停留在表层需求响应，而应围绕高层共识、控制点和推进闭环重新组织推进主线。</div>
+</div>
+</div>
+
+<div id="tab-competition" class="tab-panel">
+<div class="section">
+<div class="alert-box alert-blue" style="margin-top:14px"><strong>总结：</strong>该商机是AI能力驱动的价值型项目，王总为关键推动者，但POC验收标准未书面化、CIO技术顾虑未化解、竞品销售易已报价，当前处于"验证客户"阶段向"方案/报价"阶段过渡的关键窗口期，需优先锁定POC标准和技术共识。</div>
+
+<div style="display:grid;grid-template-columns:1fr 1px 1fr;gap:20px;margin-top:16px">
+<div>
+<div style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:10px">🔴 主要对手：A厂</div>
+<div style="font-size:12px">
+<p style="margin-bottom:6px"><strong>当前打法：</strong>通过海量同业案例轰炸，主打"稳妥保守"，利用科技部"求稳"心态建立技术恐吓。</p>
+<p style="margin-bottom:6px"><strong>优势：</strong>客户关系运营深，底座跑分长期占优，强行捆绑行内周边非信创组件。</p>
+<p><strong>命门：</strong>强依赖外企黑盒中间件（信创合规致命隐患）；缺乏全量灾备极速接管能力。</p>
+</div>
+</div>
+<div style="background:#e2e8f0"></div>
+<div>
+<div style="font-size:13px;font-weight:700;color:#1e40af;margin-bottom:10px">🔵 我方突围阵型</div>
+<div style="font-size:12px">
+<p style="margin-bottom:6px"><strong>当前困境：</strong>受困于纯代码测试低维对比，高层汇报通路被封。</p>
+<p style="margin-bottom:6px"><strong>比较优势：</strong>全栈自研、分布式微服务架构、金融级容灾高研团队背书。</p>
+<p><strong>反击策略：</strong>① 升维：打"连续性测试牌"，不拼单点跑分拼全局兜底；② 立规：强制将合规"排外"写进POC红线指标。</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="tab-decision" class="tab-panel">
+<div class="section">
+<div class="alert-box alert-red" style="margin-top:14px">
+<strong>⚠️ 决策链关键缺口：</strong>当前无法证明决策链完整——Sponsor 仅口头支持、决策者未触达、Coach 未成立、反对者未识别。这是本项目目前最大的系统性风险，高于任何技术短板。
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>角色</th><th>姓名</th><th>当前立场</th><th>决策权重</th><th>核心顾虑</th><th>突破策略</th></tr></thead>
+<tbody>
+<tr><td>决策层</td><td>业务保障部 王总</td><td><span class="tag tag-inferred">❓ 未知/观望</span></td><td>●●●●● 高</td><td>缺乏业务连续性安全感</td><td>高维直打：大区总出面 + 兜底方案强攻</td></tr>
+<tr><td>技术把关</td><td>科技部 李工</td><td><span class="tag tag-p0">⚠️ 倾向A厂</span></td><td>●●●●○ 较高</td><td>已被A厂案例洗脑，对替换心存恐惧</td><td>引入专家Coach，设置信创红线</td></tr>
+<tr><td>Coach候选</td><td>架构组 (待确认)</td><td><span class="tag tag-p1">🤝 暗中支持</span></td><td>●●○○○ 低</td><td>有线索但话语权弱</td><td>情报暗线挖掘：获取对手底牌</td></tr>
+<tr><td>缺失角色</td><td>最终拍板人</td><td><span class="tag tag-p0">⚠️ 未识别</span></td><td>●●●●● 最高</td><td>决策链无法闭环</td><td>必须补齐</td></tr>
+<tr><td>缺失角色</td><td>反对者/竞品代理人</td><td><span class="tag tag-p0">⚠️ 未识别</span></td><td>—</td><td>A厂深度渗透，必有内线</td><td>通过Coach反向摸排</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+const tabButtons = document.querySelectorAll('[data-tab-target]');
+const tabPanels = document.querySelectorAll('.tab-panel');
+
+tabButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const targetId = button.getAttribute('data-tab-target');
+
+    tabButtons.forEach((item) => item.classList.remove('active'));
+    tabPanels.forEach((panel) => panel.classList.remove('active'));
+
+    button.classList.add('active');
+    const targetPanel = document.getElementById(targetId);
+    if (targetPanel) {
+      targetPanel.classList.add('active');
+    }
+  });
+});
+</script>
+<div class="footer-note">
+📎 本报告遵循 SFA 商机诊断标准（sfa-opportunity-diagnosis）。正文中的"推断/未知"仅用于诊断梳理，需后续验证。
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</body>
+</html>

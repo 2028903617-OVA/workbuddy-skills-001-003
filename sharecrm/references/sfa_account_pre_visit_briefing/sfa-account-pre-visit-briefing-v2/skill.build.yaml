@@ -1,0 +1,54 @@
+version: 1
+skill:
+  name: sfa-account-pre-visit-briefing-v2
+  source: SKILL.md
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - "references/**"
+    - "rules/**"
+    - "scripts/**"
+    - "assets/**"
+    - "memory/**"
+dependencies:
+  references: []
+  scripts:
+    - scripts/calc_ready_score.py
+    - scripts/render_pre_visit_briefing.py
+    - scripts/validate_pre_visit_briefing.py
+  assets: []
+build:
+  builder_version: v1
+  built_at: "2026-07-15T00:00:00+08:00"
+  source_dir: journalbriefing/sfa-account-pre-visit-briefing-v2
+  package: zip
+  included_files:
+    - SKILL.md
+    - assets/templates/visit.html
+    - assets/templates/visit_mock_preview.html
+    - memory/template.md
+    - references/cli_reference.md
+    - references/competitive_reference.md
+    - references/crm_schema.md
+    - references/industry_benchmarks.md
+    - references/html_render_contract.md
+    - references/shared/crm_query_status.md
+    - references/shared/external_intelligence_sources.md
+    - references/shared/html_output_quality_gate.md
+    - references/shared/report_data_sources.md
+    - references/shared/sharecrm_cli_min_loop.md
+    - rules/R01_customer_basics.md
+    - rules/R02_decision_chain.md
+    - rules/R03_pain_points.md
+    - rules/R04_competitive.md
+    - rules/R05_ready_score.md
+    - rules/R06_brief_output.md
+    - rules/R07_game_timeline_follow_up.md
+    - rules/R08_pragmatic_style.md
+    - rules/R09_history_financial.md
+    - scripts/calc_ready_score.py
+    - scripts/render_pre_visit_briefing.py
+    - scripts/validate_pre_visit_briefing.py
+  resolved_dependencies: []
+  constraints: {}

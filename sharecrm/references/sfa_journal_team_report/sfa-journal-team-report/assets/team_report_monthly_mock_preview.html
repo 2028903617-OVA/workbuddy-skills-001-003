@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>销售部团队月报 - 2026年5月</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --accent: #ffb400;
+      --accent-soft: #fff8db;
+      --accent-line: #ffe08a;
+      --text: #111827;
+      --text-soft: #374151;
+      --muted: #6b7280;
+      --faint: #9ca3af;
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --card-soft: #fbfcfe;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --green: #059669;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --amber: #d97706;
+      --radius: 8px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+      color: var(--text-soft);
+      background:
+        linear-gradient(180deg, #ffffff 0, var(--bg) 360px),
+        var(--bg);
+    }
+    .report-shell {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 26px 24px 56px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(17, 24, 39, .08);
+      flex: 0 0 auto;
+    }
+    .brand-text {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 780;
+      letter-spacing: 0;
+    }
+    .topbar-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .chip,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      flex: 0 0 auto;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 18px;
+      padding: 22px 0 16px;
+      align-items: start;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-size: 34px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 820px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .context-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .context-row span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 3px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .76);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .meta-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .76);
+    }
+    .meta-label {
+      display: block;
+      color: var(--faint);
+      font-size: 11px;
+      font-weight: 760;
+      margin-bottom: 3px;
+    }
+    .meta-value {
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 740;
+      overflow-wrap: anywhere;
+    }
+    .health-card {
+      min-height: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: 0 10px 24px rgba(17, 24, 39, .035);
+    }
+    .health-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+    }
+    .health-score {
+      margin-top: 10px;
+      color: var(--text);
+      font-size: 38px;
+      line-height: 1;
+      font-weight: 820;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .health-grade {
+      display: inline-flex;
+      align-self: flex-start;
+      margin-top: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-line);
+      background: var(--accent-soft);
+      color: #7c5a00;
+      font-size: 12px;
+      font-weight: 780;
+    }
+    .summary-grid,
+    .metric-grid,
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(188px, 1fr));
+      gap: 12px;
+    }
+    .summary-card,
+    .metric-card,
+    .insight-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--card-soft);
+      min-width: 0;
+    }
+    .summary-card::before,
+    .metric-card::before,
+    .insight-card::before {
+      content: "";
+      display: block;
+      width: 30px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--accent);
+      margin-bottom: 10px;
+    }
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+      margin-bottom: 4px;
+    }
+    .value {
+      color: var(--text);
+      font-weight: 780;
+    }
+    .tabs-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin: 0 0 16px;
+      padding: 10px 0;
+      background: rgba(247, 248, 251, .92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid var(--border);
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0 2px 4px;
+      scrollbar-width: thin;
+    }
+    .tab-button {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 720;
+      padding: 8px 12px;
+      white-space: nowrap;
+      transition: background .16s ease, border-color .16s ease, color .16s ease;
+    }
+    .tab-button:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+    .tab-button[aria-selected="true"] {
+      color: var(--text);
+      background: var(--accent-soft);
+      border-color: var(--accent-line);
+    }
+    .tab-panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 24px rgba(17, 24, 39, .035);
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      color: var(--text);
+      font-size: 20px;
+      line-height: 1.3;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    .section-title::after {
+      content: "";
+      height: 2px;
+      flex: 1 1 auto;
+      min-width: 40px;
+      background: linear-gradient(90deg, var(--accent), rgba(255, 180, 0, 0));
+    }
+    .panel-lead {
+      margin: -4px 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      background: #f9fafb;
+      color: var(--muted);
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 780;
+      white-space: nowrap;
+    }
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #eef2f7;
+      color: var(--text-soft);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: 0; }
+    ul { margin: 0; padding-left: 20px; }
+    li + li { margin-top: 8px; }
+    .split-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+    .detail-card,
+    .action-card,
+    .risk-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--card-soft);
+    }
+    .detail-card h3,
+    .action-card h3,
+    .risk-card h3 {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .tag-p0 { background: #fef2f2; color: var(--red); border-color: #fecaca; }
+    .tag-p1 { background: #fffbeb; color: var(--amber); border-color: #fde68a; }
+    .tag-p2 { background: #eff6ff; color: var(--blue); border-color: #bfdbfe; }
+    .tag-good { background: #ecfdf5; color: var(--green); border-color: #bbf7d0; }
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .p0 { border-top: 3px solid var(--red); }
+    .p1 { border-top: 3px solid var(--amber); }
+    .p2 { border-top: 3px solid var(--blue); }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .team-daily .tab-orders,
+    .team-daily .tab-pipeline,
+    .team-daily #tab-orders,
+    .team-daily #tab-pipeline {
+      display: none;
+    }
+    .team-daily .tabs {
+      justify-content: flex-start;
+    }
+    .team-daily .hero {
+      grid-template-columns: minmax(0, 1fr) 220px;
+    }
+    @media (max-width: 1080px) {
+      .report-shell { padding: 22px 18px 46px; }
+      .hero,
+      .split-grid {
+        grid-template-columns: 1fr;
+      }
+      .health-card { min-height: 0; }
+    }
+    @media (max-width: 760px) {
+      .report-shell { padding: 18px 12px 38px; }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .topbar-meta { justify-content: flex-start; }
+      .hero { padding: 24px 0 20px; }
+      h1 { font-size: 26px; }
+      .subtitle { font-size: 14px; }
+      .meta-grid,
+      .summary-grid,
+      .metric-grid,
+      .insight-grid,
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+      .tab-panel { padding: 16px; }
+      .section-title { font-size: 17px; }
+      .section-title::after { display: none; }
+      .tabs-wrap { top: 0; padding-top: 8px; }
+      .tab-button { padding: 8px 10px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .report-shell { max-width: none; padding: 0; }
+      .tabs-wrap { display: none; }
+      .tab-panel {
+        display: block !important;
+        break-inside: avoid;
+        box-shadow: none;
+        border-color: #d1d5db;
+      }
+      .team-daily #tab-orders,
+      .team-daily #tab-pipeline {
+        display: none !important;
+      }
+      .topbar { display: none; }
+      .hero { grid-template-columns: 1fr 240px; }
+    }
+  </style>
+</head>
+<body class="team-monthly">
+  <main class="report-shell">
+    <header>
+      <div class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-text">团队销售经营复盘</span>
+        </div>
+        <div class="topbar-meta">
+          <span class="chip"><span class="status-dot"></span>团队月报</span>
+          <span class="chip">2026-05-01 至 2026-05-31</span>
+        </div>
+      </div>
+
+      <section class="hero">
+        <div>
+          <div class="eyebrow"><span class="status-dot"></span>团队月报速览 · 月度经营复盘</div>
+          <h1>销售部团队月报 - 2026年5月</h1>
+          <p class="subtitle">围绕成交结构、Pipeline 集中度、AE 活跃度、数据质量和下月资源配置展开，直接暴露团队经营短板。</p>
+          <div class="context-row" aria-label="团队范围">
+            <span>销售部 · 20名启用AE</span>
+          </div>
+        </div>
+        <aside class="health-card" aria-label="团队经营健康度">
+          <div class="health-label">月度经营健康度</div>
+          <div class="health-score">62</div>
+          <div class="health-grade">高风险 · 活跃度与集中度偏弱</div>
+        </aside>
+      </section>
+    </header>
+
+    <nav class="tabs-wrap" aria-label="团队报表页签">
+      <div class="tabs" role="tablist">
+        <button class="tab-button" type="button" role="tab" aria-selected="true" aria-controls="tab-overview" data-tab="tab-overview">总览</button>
+        <button class="tab-button tab-orders" type="button" role="tab" aria-selected="false" aria-controls="tab-orders" data-tab="tab-orders">成交结构</button>
+        <button class="tab-button tab-pipeline" type="button" role="tab" aria-selected="false" aria-controls="tab-pipeline" data-tab="tab-pipeline">Pipeline 结构</button>
+        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-ae" data-tab="tab-ae">AE 分层趋势</button>
+        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-accounts" data-tab="tab-accounts">客户/行业复盘</button>
+        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-risks" data-tab="tab-risks">管理问题与下月策略</button>
+        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-data" data-tab="tab-data">数据说明</button>
+      </div>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview" role="tabpanel">
+      <h2 class="section-title">月度经营总览</h2>
+      <p class="panel-lead">从月度经营结构看成交结果、团队活跃度、Pipeline 质量和数据可信度，不逐周堆叠流水。</p>
+      <div class="split-grid">
+        <div class="stack">
+          <div class="insight-card">
+            <span class="label">管理摘要</span>
+            <p>5月销售部成交624.76万，成交来自3笔订单，赵丹Mandy和王建新贡献全部成交；Pipeline约3700万，但赵丹Mandy占比超94%。20名启用AE中仅4人有业务活动，16人沉默或数据异常，且存在约30条 test 记录、空金额商机和阶段缺失，6月首要任务是激活团队产能、降低Pipeline单点依赖并完成数据清理。</p>
+          </div>
+          <div class="metric-grid">
+            <div class="metric-card"><span class="label">成交金额</span><div class="value">624.76万</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">3笔订单/回款</p></div><div class="metric-card"><span class="label">成交笔数</span><div class="value">3笔</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">赵丹Mandy 2笔，王建新 1笔</p></div><div class="metric-card"><span class="label">Pipeline储备</span><div class="value">约3700万</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">赵丹Mandy约3500万</p></div><div class="metric-card"><span class="label">活跃AE</span><div class="value">4 / 20</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">仅20%有业务活动</p></div><div class="metric-card"><span class="label">有效销售记录</span><div class="value">约70条</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">剔除约30条test记录</p></div><div class="metric-card"><span class="label">日程安排</span><div class="value">4场</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">集中在赵丹Mandy</p></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="detail-card">
+            <h3>关键结果</h3>
+            <ul><li>YY发电集团成交420万，是本月单笔最大订单，可沉淀能源电力行业打法。</li><li>Marketing Hub成交80万，数字营销系统回款124.76万，营销科技方向形成连续产出。</li><li>宁德时代、小米完成首触，但尚未进入正式商机，需要下月专项推进。</li></ul>
+          </div>
+          <div class="detail-card">
+            <h3>本期最重要管理判断</h3>
+            <p>本月最大问题不是没有成交，而是团队产能没有打开：成交和Pipeline高度依赖少数AE，沉默成员过多，同时数据污染削弱了经营判断可信度。</p>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 14px;">
+        <div class="insight-grid"><div class="insight-card"><span class="label">经营结果</span><div class="value">成交达成但结构脆弱</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">成交集中在2名AE，团队整体产能利用不足</p></div><div class="insight-card"><span class="label">活跃度风险</span><div class="value">16人沉默/异常</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">20名AE中仅4人有业务活动记录</p></div><div class="insight-card"><span class="label">Pipeline风险</span><div class="value">单点依赖超94%</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">赵丹Mandy Pipeline约3500万，占总储备绝大多数</p></div><div class="insight-card"><span class="label">数据质量</span><div class="value">需6月首周清理</div><p style="margin:6px 0 0;color:var(--muted);font-size:12px;">test记录、空金额、阶段缺失影响分析准确性</p></div></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-orders" role="tabpanel">
+      <h2 class="section-title">成交结构</h2>
+      <p class="panel-lead">分析成交/回款来源、行业贡献、AE集中度和可复制打法。</p>
+      <div class="table-wrap"><table><thead><tr><th>订单/回款</th><th>金额</th><th>日期</th><th>负责人</th><th>行业</th><th>管理判断</th></tr></thead><tbody><tr><td>Marketing Hub</td><td>80万</td><td>2026-05-22</td><td>赵丹Mandy</td><td>营销科技</td><td>新签，可关注增购</td></tr><tr><td>YY发电集团</td><td>420万</td><td>2026-05-27</td><td>王建新</td><td>能源电力</td><td>单笔最大，需沉淀行业SOP</td></tr><tr><td>数字营销系统（回款）</td><td>124.76万</td><td>2026-05-07</td><td>赵丹Mandy</td><td>营销科技</td><td>回款完成，但同名商机逾期需处理</td></tr></tbody></table></div>
+    </section>
+
+    <section class="tab-panel" id="tab-pipeline" role="tabpanel">
+      <h2 class="section-title">Pipeline 结构</h2>
+      <p class="panel-lead">对比 Pipeline 金额、阶段质量、负责人集中度、逾期、空金额和阶段缺失。</p>
+      <div class="table-wrap"><table><thead><tr><th>商机/结构</th><th>金额</th><th>阶段</th><th>负责人</th><th>行业</th><th>状态/判断</th></tr></thead><tbody><tr><td>数字营销系统</td><td>124.76万</td><td>需求确定</td><td>赵丹Mandy</td><td>营销科技</td><td>已逾期，6月第一周P0处理</td></tr><tr><td>Digital Marketing System</td><td>124.76万</td><td>验证客户</td><td>赵丹Mandy</td><td>营销科技</td><td>推进中</td></tr><tr><td>AI转型项目</td><td>200万</td><td>验证客户</td><td>赵丹Mandy</td><td>AI/科技</td><td>推进中</td></tr><tr><td>王建新多行业商机</td><td>金额待补</td><td>阶段缺失</td><td>王建新</td><td>航空/制造/医疗/政府/能源</td><td>国航、大连重工、安贞医院等需补金额和阶段</td></tr><tr><td>负责人集中度</td><td>约3500万</td><td>多阶段</td><td>赵丹Mandy</td><td>多行业</td><td>Pipeline占比超94%，单点依赖风险高</td></tr></tbody></table></div>
+    </section>
+
+    <section class="tab-panel" id="tab-ae" role="tabpanel">
+      <h2 class="section-title">AE 分层趋势</h2>
+      <p class="panel-lead">按产出、Pipeline、活跃度、销售记录和数据质量识别核心产出、高潜力、待激活、数据异常和零活动。</p>
+      <div class="table-wrap"><table><thead><tr><th>层级</th><th>AE</th><th>成交金额</th><th>Pipeline</th><th>活跃度/记录</th><th>管理判断</th></tr></thead><tbody><tr><td>核心产出</td><td>赵丹Mandy</td><td>204.76万</td><td>约3500万</td><td>★★★★★ / 40条</td><td>全流程覆盖，团队支柱，但集中度过高</td></tr><tr><td>高潜力</td><td>王建新</td><td>420万</td><td>约200万</td><td>★★★★ / 10条</td><td>大单能力强，需扩大Pipeline至500万+</td></tr><tr><td>待激活</td><td>贺亚飞</td><td>0</td><td>0</td><td>★★ / 6条</td><td>仅邮件沟通，6月需安排至少2次客户面访</td></tr><tr><td>待激活</td><td>肖俊</td><td>0</td><td>0</td><td>★ / 1条</td><td>记录极少，最低标准为5条销售记录和2个新商机</td></tr><tr><td>数据异常</td><td>熊涛、贾攀攀</td><td>0</td><td>0</td><td>test/空金额</td><td>需核实真实状态并清理数据</td></tr><tr><td>零活动</td><td>其余14人</td><td>0</td><td>0</td><td>0条</td><td>完全沉默，需系统性激活</td></tr></tbody></table></div>
+      <div style="margin-top: 14px;">
+        
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-accounts" role="tabpanel">
+      <h2 class="section-title">客户/行业复盘</h2>
+      <p class="panel-lead">复盘贡献客户、战略潜客、逾期商机和重点行业的下月优先级。</p>
+      <div class="stack"><div class="detail-card"><h3>数字营销系统 · P0</h3><p>回款124.76万，但商机已逾期；6月第一周必须推动进入下一阶段并解决逾期。</p></div><div class="detail-card"><h3>宁德时代/小米 · P0</h3><p>完成首触但未形成正式商机；需要制定专项推进计划，进入商机阶段。</p></div><div class="detail-card"><h3>YY发电集团 · P1</h3><p>成交420万并回款，建议沉淀能源电力行业SOP，复制到国家电网等客户。</p></div><div class="detail-card"><h3>国航/安贞医院/大连重工 · P2</h3><p>多个商机推进中，但金额和阶段缺失，需要先补齐数据再判断优先级。</p></div></div>
+      <div style="margin-top: 14px;">
+        
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-risks" role="tabpanel">
+      <h2 class="section-title">管理问题与下月策略</h2>
+      <p class="panel-lead">把活跃度系统性缺失、Pipeline 集中度、数据污染和逾期商机转成下月 P0/P1/P2 动作。</p>
+      <div class="stack"><div class="risk-card"><h3>高风险 · 团队活跃度系统性缺失</h3><p>20名AE中仅4人有业务活动，16人沉默或数据异常，产能利用率仅20%。</p></div><div class="risk-card"><h3>中风险 · Pipeline集中度过高</h3><p>约3700万 Pipeline 中赵丹Mandy占比超94%，一旦变故团队业绩受重创。</p></div><div class="risk-card"><h3>中风险 · Pipeline数据质量不足</h3><p>王建新多条商机金额为空、阶段为“—”，无法判断真实转化质量。</p></div><div class="risk-card"><h3>低风险 · 数据污染</h3><p>约30条 test 记录、xt1测试数据和统计截止日不完整会影响经营分析准确性。</p></div></div>
+      <div class="action-grid" style="margin-top: 14px;">
+        <div class="action-card p0">
+          <h3><span class="tag tag-p0">P0</span> 主管必须亲自处理</h3>
+          <ul><li>激活沉默AE：逐一沟通16名沉默/异常AE，6月第一周形成个人激活计划，负责人赵丹Mandy。</li><li>数据清理：清理test记录、空金额商机、xt1测试数据，6月第一周完成，验证标准为月报口径可复算。</li><li>逾期商机处理：推动数字营销系统进入下一阶段，6月第一周完成阶段更新和下一步确认。</li></ul>
+        </div>
+        <div class="action-card p1">
+          <h3><span class="tag tag-p1">P1</span> 团队协调处理</h3>
+          <ul><li>扩大王建新Pipeline：从约200万扩展至500万以上，6月全月跟踪。</li><li>激活贺亚飞：安排至少2次客户面访，推动深度跟进。</li><li>激活肖俊：最低标准为5条销售记录、2个新商机。</li><li>战略潜客推进：宁德时代、小米从首触推进至正式商机。</li><li>张一元商务推进：从方案讨论进入商务阶段。</li></ul>
+        </div>
+        <div class="action-card p2">
+          <h3><span class="tag tag-p2">P2</span> 常规跟进</h3>
+          <ul><li>行业打法沉淀：YY发电集团经验沉淀为能源电力行业SOP。</li><li>活跃度监控：建立周度团队活跃度看板。</li><li>Pipeline推进：国航、安贞医院、大连重工等补齐金额、阶段并进入下一阶段。</li></ul>
+        </div>
+      </div>
+      <div style="margin-top: 14px;">
+        <div class="detail-card"><h3>下月管理节奏</h3><p>6月第一周完成数据清理和沉默AE访谈；每周一查看活跃度看板，周三检查Pipeline金额/阶段完整性，周五复盘P0商机和待激活AE进展。</p></div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-data" role="tabpanel">
+      <h2 class="section-title">数据说明</h2>
+      <p class="panel-lead">说明数据来源、统计周期、团队/AE 覆盖、清洗口径和生成时间；不要暴露对象 ApiName 或记录 ID。</p>
+      <div class="note">
+        <p>模拟数据参考“销售部_2026年5月团队月报”结构：统计周期为2026年5月1日至5月31日，人员范围为销售部20名启用AE；数据来源包括日志、销售记录、日程、商机、订单和回款。已识别约30条test记录、空金额商机和阶段缺失；报告生成基于截至5月27日数据，5月28日至31日数据未纳入。</p>
+      </div>
+      <div style="margin-top: 14px;">
+        
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var buttons = Array.prototype.slice.call(document.querySelectorAll('.tab-button'));
+      var panels = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
+      function activate(id) {
+        buttons.forEach(function (button) {
+          var selected = button.getAttribute('data-tab') === id;
+          button.setAttribute('aria-selected', selected ? 'true' : 'false');
+        });
+        panels.forEach(function (panel) {
+          panel.classList.toggle('active', panel.id === id);
+        });
+      }
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          activate(button.getAttribute('data-tab'));
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

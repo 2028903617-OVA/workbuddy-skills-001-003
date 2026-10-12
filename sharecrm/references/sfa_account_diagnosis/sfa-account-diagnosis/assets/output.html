@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户经营洞察报告</title>
+<style>
+  :root {
+    --primary: #1d4ed8;
+    --primary-deep: #163a63;
+    --primary-light: #eff6ff;
+    --accent: #60a5fa;
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --toc-width: 236px;
+    --success-bg: #dcfce7;
+    --success-text: #166534;
+    --warn-bg: #fef3c7;
+    --warn-text: #b45309;
+    --danger-bg: #fee2e2;
+    --danger-text: #b91c1c;
+    --slate-bg: #e2e8f0;
+    --slate-text: #475569;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #163a63 45%, #1d4ed8 100%);
+    color: #fff;
+    padding: 28px 20px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    top: -90px;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .cover .eyebrow {
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.72;
+    margin-bottom: 12px;
+  }
+  .cover h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: .5px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover .subtitle {
+    font-size: 15px;
+    opacity: 0.8;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+  }
+  .cover-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 24px 28px 30px;
+    border-radius: 18px 18px 0 0;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0f172a 0%, #163a63 45%, #1d4ed8 100%);
+  }
+  .cover-inner::after {
+    content: "";
+    position: absolute;
+    right: -90px;
+    top: -90px;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .cover-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 28px;
+    position: relative;
+    z-index: 1;
+  }
+  .score-box {
+    min-width: 148px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.14);
+    backdrop-filter: blur(6px);
+    border-radius: 14px;
+    padding: 16px 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .score-num {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.05;
+  }
+  .score-num small {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .score-label {
+    font-size: 12px;
+    color: #dbeafe;
+    margin-top: 6px;
+    letter-spacing: .03em;
+  }
+  .cover-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 10px 28px;
+    font-size: 13px;
+    opacity: 0.88;
+    position: relative;
+    z-index: 1;
+  }
+  .cover-meta div { display: flex; gap: 8px; }
+  .cover-meta dt { opacity: 0.65; white-space: nowrap; }
+  .cover-meta dd { font-weight: 500; }
+
+  .layout {
+    display: flex;
+    max-width: 1320px;
+    margin: 0 auto;
+    min-height: 100vh;
+  }
+  .toc {
+    width: var(--toc-width);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 28px 16px 28px 24px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+  }
+  .toc-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .toc a {
+    display: block;
+    padding: 7px 10px;
+    margin-bottom: 2px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 6px;
+    border-left: 2px solid transparent;
+    transition: all .15s ease;
+    font-size: 13px;
+  }
+  .toc a:hover {
+    color: var(--primary);
+    background: var(--primary-light);
+  }
+  .toc a.active {
+    color: var(--primary);
+    background: var(--primary-light);
+    border-left-color: var(--primary);
+    font-weight: 600;
+  }
+  .content {
+    flex: 1;
+    min-width: 0;
+    padding: 36px 40px 60px;
+  }
+  section {
+    margin-bottom: 44px;
+    scroll-margin-top: 24px;
+  }
+  .section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-deep), var(--primary));
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .summary-block {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary);
+    border-radius: 0 10px 10px 0;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+  }
+  .summary-block h3 {
+    color: var(--primary);
+    font-size: 14px;
+    letter-spacing: .8px;
+    margin-bottom: 6px;
+  }
+  .summary-block p {
+    font-size: 14px;
+    color: #334155;
+  }
+  .pill-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .pill-blue { background: #dbeafe; color: #1d4ed8; }
+  .pill-green { background: var(--success-bg); color: var(--success-text); }
+  .pill-amber { background: var(--warn-bg); color: var(--warn-text); }
+  .pill-slate { background: var(--slate-bg); color: var(--slate-text); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 16px;
+    background: var(--card);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  thead { background: #f1f5f9; }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: #334155;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8fafc; }
+
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .risk-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .risk-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .risk-card p {
+    font-size: 13px;
+    color: #475569;
+  }
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .tag-p0 { background: var(--danger-bg); color: var(--danger-text); }
+  .tag-p1 { background: #fff7ed; color: #c2410c; }
+  .tag-p2 { background: #f0fdf4; color: #15803d; }
+
+  .foot-note {
+    font-size: 13px;
+    color: #475569;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  @media (max-width: 1100px) {
+    .layout { display: block; }
+    .toc { display: none; }
+    .content { padding: 28px 20px 48px; }
+    .cover { padding: 20px 12px 0; }
+    .cover-inner { padding: 22px 20px 26px; border-radius: 16px 16px 0 0; }
+    .cover-head { display: block; }
+    .score-box { margin-top: 18px; }
+  }
+  /* Unified light report theme. Header markup and content are intentionally unchanged. */
+  :root{--primary:#1757e8;--primary-deep:#12369a;--primary-light:#edf3ff;--text:#202735;--text-muted:#687184;--bg:#f7f8fa;--border:#e1e5ec;--toc-width:360px}
+  body{background:var(--bg);line-height:1.75;font-size:16px;padding:10px 18px 24px}
+  .cover{max-width:1940px;margin:0 auto;padding:0;color:var(--text);background:transparent;overflow:visible}.cover::after,.cover-inner::after{display:none}
+  .cover-inner{max-width:none;min-height:230px;padding:40px 46px;border:1px solid #dbe3ef;border-radius:18px;background:linear-gradient(110deg,#fff 0%,#fff 53%,#edf5ff 75%,#cbdcff 100%);box-shadow:0 2px 5px rgba(30,58,105,.1)}
+  .cover .eyebrow{margin-bottom:18px;color:#1c55df;font-size:14px;font-weight:700;letter-spacing:4px;opacity:1}.cover h1{margin-bottom:14px;color:#111827;font-size:34px;line-height:1.35;letter-spacing:0}.cover .subtitle{margin-bottom:0;color:#687184;font-size:16px;opacity:1}
+  .score-box{min-width:214px;margin:4px 0 0;padding:23px 22px 20px;color:#12369a;background:rgba(244,248,255,.74);border:1px solid #a9c4f8;border-radius:24px;box-shadow:0 10px 30px rgba(66,105,181,.13);backdrop-filter:none}.score-num{font-size:52px;line-height:1}.score-num small{font-size:20px}.score-label{margin-top:10px;color:#687184;font-size:14px;letter-spacing:0}
+  .cover-meta{margin-top:24px;padding-top:18px;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px 24px;color:#556074;border-top:1px solid rgba(169,188,222,.45);font-size:13px;opacity:1}.cover-meta dt{color:#7a8496;opacity:1}.cover-meta dd{color:#354157;font-weight:600}
+  .layout{max-width:1940px;margin:30px auto 0;min-height:0;align-items:flex-start;gap:30px}.toc{width:var(--toc-width);height:auto;max-height:calc(100vh - 40px);top:20px;padding:30px 22px 34px;border:1px solid var(--border);border-radius:18px;box-shadow:0 2px 5px rgba(30,41,59,.08)}.toc-title{margin:0 16px 18px;color:#606979;font-size:15px;letter-spacing:0}.toc a{margin-bottom:4px;padding:13px 16px;color:#70798a;border-left:3px solid transparent;border-radius:8px;font-size:15px}.toc a.active{color:var(--primary);background:#eaf1ff;border-left-color:var(--primary)}
+  .content{padding:40px 44px 54px;background:#fff;border:1px solid var(--border);border-radius:18px;box-shadow:0 2px 5px rgba(30,41,59,.08)}section{margin-bottom:50px}.section-title{margin-bottom:24px;padding-bottom:20px;color:#1c2430;border-bottom:1px solid #dfe3e9;font-size:23px;letter-spacing:0}.section-index{width:40px;height:40px;color:var(--primary);background:#eff4ff;border:1px solid #d4e0ff;border-radius:10px;font-size:15px}
+  .summary-block{margin-bottom:26px;padding:25px 30px;background:#edf3ff;border:1px solid #cfddff;border-left:4px solid var(--primary);border-radius:10px}.summary-block h3{margin-bottom:8px;color:var(--primary);font-size:16px;letter-spacing:0}.summary-block p{color:#465166;font-size:15px}.pill{padding:5px 14px;border:1px solid #c9d9ff;font-size:13px}
+  table{margin-bottom:18px;border:0;border-radius:10px;font-size:14px}thead{background:#f6f7f9}th{padding:14px 18px;color:#646c7c;border-bottom:1px solid #dfe3e9;font-size:13px;text-transform:none;letter-spacing:0}td{padding:16px 18px;color:#465166;border-bottom:1px solid #e8ebef;line-height:1.75}td:first-child{color:#202735;font-weight:700}tr:hover td{background:#fafbfc}.risk-card,.foot-note{border-color:#e1e5ec;border-radius:8px;box-shadow:none}
+  @media(max-width:1100px){body{padding:10px}.layout{display:block;margin-top:16px}.toc{display:none}.content{padding:28px 20px 48px;border-radius:12px}.cover{padding:0}.cover-inner{min-height:0;padding:24px 20px;border-radius:12px}.cover-head{display:block}.cover h1{font-size:26px}.score-box{min-width:0;width:150px;margin-top:18px;border-radius:16px}.score-num{font-size:40px}.cover-meta{grid-template-columns:1fr 1fr}.section-title{font-size:20px}table{min-width:760px}section{overflow-x:auto}}
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-head">
+      <div>
+        <div class="eyebrow">Account Insight Report</div>
+        <h1>浙江华澜智能制造集团客户经营洞察报告</h1>
+        <div class="subtitle">基于 CRM、客户经营事实与结构化判断结果生成，用于支持客户经营决策。</div>
+      </div>
+      <div class="score-box">
+        <div class="score-num">78<small>/100</small></div>
+        <div class="score-label">经营健康度</div>
+      </div>
+    </div>
+    <dl class="cover-meta">
+      <div><dt>客户级别</dt><dd>战略客户</dd></div>
+      <div><dt>负责人</dt><dd>张明</dd></div>
+      <div><dt>当前状态</dt><dd>升温深耕期</dd></div>
+      <div><dt>合作温度</dt><dd>中高</dd></div>
+      <div><dt>洞察主题</dt><dd>是否值得继续加大经营投入</dd></div>
+    </dl>
+  </div>
+</div>
+
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">目录</div>
+    <a href="#section-1" class="active">一、客户当前状态</a>
+    <a href="#section-2">二、客户真实关注点</a>
+    <a href="#section-3">三、组织突破口</a>
+    <a href="#section-4">四、增长空间</a>
+    <a href="#section-5">五、经营建议</a>
+    <a href="#section-6">附：经营风险提示</a>
+  </aside>
+
+  <main class="content">
+    <section id="section-1">
+      <div class="section-title"><span class="section-index">一</span>客户当前状态</div>
+      <div class="summary-block">
+        <h3>一句话判断</h3>
+        <p>这是一个值得继续经营的高价值客户，当前处于“升温深耕期”：关系基础已经形成，机会有活性，但高层通路和经营节奏还没有完全打透。</p>
+        <div class="pill-row">
+          <span class="pill pill-blue">当前状态标签：升温深耕期</span>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>维度</th><th>当前判断</th><th>事实</th><th>判断</th><th>待确认问题</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>客户价值</td><td>高</td><td>集团年营收超 80 亿，近三年已落地 2 个数字化项目。</td><td>具备持续经营价值，不是一次性项目客户。</td><td>未来三年是否有集团级统一规划预算。</td></tr>
+          <tr><td>关系温度</td><td>中高</td><td>近 90 天内有 6 次有效互动，业务和 IT 两条线均有接触。</td><td>关系基础已建立，但仍偏核心接口人驱动。</td><td>是否已有能稳定上推高层的内部支持者。</td></tr>
+          <tr><td>机会活跃度</td><td>中</td><td>2 个在跑机会，其中 1 个推进顺畅，1 个停留在需求确认阶段。</td><td>机会池有活性，但经营节奏不均衡。</td><td>停滞机会是优先级问题还是关键人缺位。</td></tr>
+          <tr><td>组织突破条件</td><td>部分具备</td><td>已覆盖业务负责人和信息化经理，但未实质触达集团分管副总。</td><td>存在突破入口，但尚未形成真正的高层经营通路。</td><td>谁最适合作为上推高层的杠杆角色。</td></tr>
+          <tr><td>经营风险</td><td>中</td><td>竞品近期增强接触，且我方关系仍有单点依赖。</td><td>若不扩展关系面，后续机会容易被竞品切走。</td><td>竞品目前绑定的是哪个条线、哪个项目。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="section-2">
+      <div class="section-title"><span class="section-index">二</span>客户真实关注点</div>
+      <div class="summary-block">
+        <h3>一句话判断</h3>
+        <p>客户表面上在推进“制造协同平台升级”，但真正驱动其行动的，不只是系统建设本身，而是集团管理可视化、跨工厂协同效率提升，以及预算收紧背景下可汇报的经营改善成果。</p>
+        <div class="pill-row">
+          <span class="pill pill-blue">当前我方命中度：部分命中</span>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>判断项</th><th>判断依据</th><th>当前结论</th><th>对经营的影响</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>表面关注点</td><td>客户多次提到生产协同、系统打通、跨工厂数据一致性。</td><td>当前公开关注点是平台升级和业务协同效率提升。</td><td>经营切口应先落在业务协同价值，而不是泛讲产品能力。</td></tr>
+          <tr><td>深层驱动</td><td>客户反复提到管理层要看经营改善结果，且预算审批趋严。</td><td>真实驱动是让管理层看到效率改善和经营结果，而不是单纯完成系统建设。</td><td>价值表达要从“系统建设”抬到“管理改善成果”。</td></tr>
+          <tr><td>当前约束</td><td>关键预算归口未完全明确，高层尚未形成统一支持口径。</td><td>客户有兴趣、有需求，但推进条件还没有完全成熟。</td><td>下一步要优先补共识和预算路径，而不是过早压方案细节。</td></tr>
+          <tr><td>当前错位</td><td>我方当前沟通仍偏模块能力和实施细节，较少上升到集团经营管理语言。</td><td>我方命中了项目需求，但还没有完全命中客户高层的真实推动理由。</td><td>后续需要把经营语言和高层价值口径前置。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="section-3">
+      <div class="section-title"><span class="section-index">三</span>组织突破口</div>
+      <div class="summary-block">
+        <h3>一句话判断</h3>
+        <p>当前最现实的突破方式不是继续在执行层加密沟通，而是借助现有业务负责人，把切口从“项目讨论”抬高到“集团经营改善成果”，进而争取高层形成更明确的经营支持。</p>
+      </div>
+      <table>
+        <thead>
+          <tr><th>判断项</th><th>判断依据</th><th>当前结论</th><th>对经营的影响</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>当前入口条线</td><td>业务条线反馈积极，技术条线保持配合，但高层互动不足。</td><td>当前最有效入口仍是业务条线，而不是技术条线。</td><td>后续经营应先借业务问题抬高价值主张，再上推高层。</td></tr>
+          <tr><td>杠杆角色</td><td>业务负责人愿意牵头，且对跨工厂协同效率问题有明确诉求。</td><td>业务负责人是当前最具价值的杠杆角色。</td><td>应围绕其最关注的管理指标设计沟通材料。</td></tr>
+          <tr><td>拍板关键</td><td>集团分管副总尚未实质触达，预算归口也受其态度影响。</td><td>真正拍板关键仍在集团高层，而非执行层。</td><td>不触达高层，后续扩展会持续受限。</td></tr>
+          <tr><td>隐性阻力</td><td>接口人可配合，但不具备强上推能力；竞品已开始增强接触。</td><td>当前隐性阻力是关系单点和高层口径不统一。</td><td>若继续停留在接口层，容易被竞品反向切走高层心智。</td></tr>
+          <tr><td>推荐突破路径</td><td>现阶段具备业务切入基础，但缺少高层升维动作。</td><td>建议采取“业务负责人牵引 + 高层经营改善汇报”的双线突破路径。</td><td>这条路径更容易同时解决共识和预算问题。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="section-4">
+      <div class="section-title"><span class="section-index">四</span>增长空间</div>
+      <div class="summary-block">
+        <h3>一句话判断</h3>
+        <p>该客户不是单点项目机会，而是具备“样板项目带复制扩展”的平台型经营空间。短期应先围绕主机会做深，中期有望向多工厂协同和管理层驾驶舱延展。</p>
+      </div>
+      <table>
+        <thead>
+          <tr><th>判断项</th><th>当前结论</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>当前主机会</td><td>制造协同平台升级</td><td>这是当前最成熟、最容易转化为标杆的主线机会。</td></tr>
+          <tr><td>潜在扩展方向</td><td>供应链协同、工厂复制、管理驾驶舱</td><td>若当前项目跑通，可向集团其他工厂或管理层场景扩展。</td></tr>
+          <tr><td>复制可能性</td><td>中高</td><td>客户内部业务模式相似，但需要先验证一个样板点。</td></tr>
+          <tr><td>战略合作空间</td><td>中</td><td>若形成集团级认可，后续有机会从项目合作升级为长期数字化合作。</td></tr>
+          <tr><td>是否值得追加投入</td><td>值得选择性加大投入</td><td>客户价值高、关系基础在，但仍需围绕高层突破和样板复制控制节奏。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="section-5">
+      <div class="section-title"><span class="section-index">五</span>经营建议</div>
+      <div class="summary-block">
+        <h3>当前经营策略</h3>
+        <p>建议采用“深耕 + 扩展预埋”策略。当前不适合粗放铺开，而应先围绕主机会做深做透，再通过高层价值共识和样板复制验证，逐步扩大客户经营版图。</p>
+        <div class="pill-row">
+          <span class="pill pill-blue">策略判断：深耕</span>
+          <span class="pill pill-green">扩展预埋：是</span>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>动作</th><th>目的</th><th>预期解决的问题</th><th>负责人/对象</th><th>节奏</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>围绕集团经营改善主题组织一次高层沟通</td><td>补高层价值认知</td><td>解决当前高层经营通路未形成的问题</td><td>销售负责人 / 分管副总</td><td>2周内</td></tr>
+          <tr><td>对停滞机会做一次联合复盘，明确卡点与责任人</td><td>恢复机会活跃度</td><td>解决在跑机会推进不均衡的问题</td><td>销售经理 / 客户接口人</td><td>1周内</td></tr>
+          <tr><td>选择一个工厂场景做复制条件评估</td><td>验证增长空间</td><td>解决是否值得继续追加投入的不确定性</td><td>售前负责人 / 业务条线负责人</td><td>本月内</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="section-6">
+      <div class="section-title"><span class="section-index">附</span>经营风险提示</div>
+      <div class="risk-grid">
+        <div class="risk-card">
+          <h4><span class="tag tag-p0">P0</span>高层经营通路未形成</h4>
+          <p><strong>来源：</strong>组织突破条件短板<br><strong>影响：</strong>当前关系若长期停留在执行层，集团级扩展会受阻。<br><strong>方向：</strong>补高层支持者与可上推路径。</p>
+        </div>
+        <div class="risk-card">
+          <h4><span class="tag tag-p1">P1</span>机会活跃度不均衡</h4>
+          <p><strong>来源：</strong>当前机会活跃度判断<br><strong>影响：</strong>部分机会停滞，客户经营动作难形成连续成果。<br><strong>方向：</strong>逐个盘点卡点，恢复节奏。</p>
+        </div>
+        <div class="risk-card">
+          <h4><span class="tag tag-p2">P2</span>复制条件尚未验证</h4>
+          <p><strong>来源：</strong>增长空间判断<br><strong>影响：</strong>若过早扩大投入，资源可能先行摊薄。<br><strong>方向：</strong>先完成样板验证，再决定是否放大。</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot-note"><strong>说明：</strong>该示例仅用于展示新版客户经营洞察报告的结构与风格，不代表真实客户数据。</div>
+  </main>
+</div>
+<script>
+  const links = document.querySelectorAll('.toc a');
+  const sections = [...document.querySelectorAll('main section')];
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        links.forEach((link) => link.classList.remove('active'));
+        const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -55% 0px', threshold: 0.1 });
+  sections.forEach((section) => observer.observe(section));
+</script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户声音报告 — {scope_label}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --page-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-sub: #475569;
+    --text-muted: #64748b;
+    --line-soft: #e5eef5;
+    --card-radius: 14px;
+    --card-inner-radius: 10px;
+    --blue-shell: #eaf6fd;
+    --blue-line: #cfe8f7;
+    --blue-title: #1e6fa8;
+    --green-shell: #f0f7df;
+    --green-line: #deeab1;
+    --green-title: #8b931c;
+    --orange-shell: #fff3df;
+    --orange-line: #f5dfb7;
+    --orange-title: #d47c1d;
+    --gray-line: #dde5ee;
+  }
+  body { font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif; background: var(--page-bg); color: var(--text-main); line-height: 1.75; }
+  .report-header {
+    background:
+      radial-gradient(circle at top right, rgba(255,255,255,0.18), transparent 28%),
+      linear-gradient(135deg, #e9f1f8 0%, #dce9f3 46%, #eef4f8 100%);
+    color: #1f3b53;
+    padding: 34px 40px 30px;
+    border-bottom: 1px solid #d5e2ec;
+  }
+  .report-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 10px; color: #16354c; letter-spacing: 0.2px; }
+  .report-meta { display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
+  .meta-item {
+    font-size: 13px;
+    color: #587187;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(213,226,236,0.9);
+    border-radius: 999px;
+    padding: 6px 12px;
+  }
+  .meta-item strong { color: #16354c; font-weight: 600; }
+  .report-body { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+  h2.section-title { font-size: 18px; font-weight: 700; color: #111827; margin: 34px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #edf2f7; }
+  h3.subsection-title { font-size: 15px; font-weight: 700; color: #111827; margin: 24px 0 12px; }
+  .dimension-overview-list { display: grid; gap: 12px; margin-bottom: 24px; }
+  .dimension-overview-item,
+  .appeals-dim-card,
+  .signal-risk,
+  .signal-opportunity,
+  .customer-tier,
+  .conclusion-item,
+  .upgrade-card {
+    border-radius: var(--card-radius);
+    border: 1px solid var(--line-soft);
+    box-shadow: none;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+  }
+  .dimension-overview-item { padding: 14px 16px; font-size: 14px; color: var(--text-sub); line-height: 1.85; display: flex; align-items: flex-start; gap: 12px; }
+  .dimension-overview-item::before { content: ""; width: 8px; height: 8px; border-radius: 999px; margin-top: 9px; flex: 0 0 auto; }
+  .dimension-overview-item:nth-child(1) { border-color: #f4dfce; }
+  .dimension-overview-item:nth-child(1)::before { background: #c46a1c; }
+  .dimension-overview-item:nth-child(2) { border-color: #f5e2bf; }
+  .dimension-overview-item:nth-child(2)::before { background: #c98a15; }
+  .dimension-overview-item:nth-child(3) { border-color: var(--orange-line); }
+  .dimension-overview-item:nth-child(3)::before { background: var(--orange-title); }
+  .dimension-overview-item:nth-child(4) { border-color: var(--blue-line); }
+  .dimension-overview-item:nth-child(4)::before { background: var(--blue-title); }
+  .dimension-overview-item:nth-child(5) { border-color: #d6ecd9; }
+  .dimension-overview-item:nth-child(5)::before { background: #2f855a; }
+  .dimension-overview-item:nth-child(6) { border-color: var(--green-line); }
+  .dimension-overview-item:nth-child(6)::before { background: #79910b; }
+  .dimension-overview-item strong { color: #111827; font-size: 15px; font-weight: 700; }
+  .overview-text { flex: 1; }
+  .issue-list-card { border-radius: var(--card-radius); border: 1px solid #d9e7f1; background: #f8fbfe; padding: 14px 16px 16px; margin-bottom: 24px; }
+  .issue-list-title { font-size: 14px; font-weight: 700; color: #1e6fa8; margin-bottom: 10px; }
+  .issue-list { margin-left: 18px; color: var(--text-sub); font-size: 13px; line-height: 1.85; }
+  .issue-list li { margin-bottom: 8px; }
+  .issue-list li::marker { color: #1e6fa8; }
+  .appeals-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .appeals-dim-card { padding: 0; border-color: var(--gray-line); }
+  .appeals-dim-card.risk { border-color: #f0d4cb; }
+  .appeals-dim-card.opportunity { border-color: #dfe7b8; }
+  .appeals-dim-card.stable { border-color: #dde4ef; }
+  .dim-card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 14px; margin-bottom: 0; border-bottom: 1px solid rgba(255,255,255,0.9); }
+  .appeals-dim-card.risk .dim-card-header { background: #fff2ef; }
+  .appeals-dim-card.opportunity .dim-card-header { background: #f4f8e6; }
+  .appeals-dim-card.stable .dim-card-header { background: #f2f5fb; }
+  .dim-name { font-size: 15px; font-weight: 700; color: #334155; }
+  .appeals-dim-card.risk .dim-name { color: #c65b3d; }
+  .appeals-dim-card.opportunity .dim-name { color: #7c880d; }
+  .appeals-dim-card.stable .dim-name { color: #53657b; }
+  .dim-signal-tag { font-size: 11px; padding: 0; border-radius: 0; font-weight: 600; background: transparent; }
+  .dim-signal-tag.risk { color: #cf6b4f; }
+  .dim-signal-tag.opportunity { color: #8b931c; }
+  .dim-signal-tag.stable { color: #738499; }
+  .dim-summary, .dim-voices, .dim-action { margin-left: 12px; margin-right: 12px; }
+  .dim-summary { font-size: 13px; color: var(--text-sub); margin-top: 12px; margin-bottom: 10px; padding: 0; }
+  .dim-summary strong { color: var(--text-main); font-weight: 700; }
+  .appeals-dim-card.risk .dim-summary strong { color: #c65b3d; }
+  .appeals-dim-card.opportunity .dim-summary strong { color: #7c880d; }
+  .appeals-dim-card.stable .dim-summary strong { color: #53657b; }
+  .dim-voices { margin: 0 12px 12px 30px; padding: 0 10px 0 0; color: var(--text-sub); font-size: 13px; }
+  .dim-voices li { margin-bottom: 8px; }
+  .appeals-dim-card.risk .dim-voices li::marker { color: #cf6b4f; }
+  .appeals-dim-card.opportunity .dim-voices li::marker { color: #8b931c; }
+  .appeals-dim-card.stable .dim-voices li::marker { color: #738499; }
+  .dim-action { font-size: 13px; color: var(--text-main); background: #ffffff; border: 1px solid rgba(229,238,245,0.95); border-radius: var(--card-inner-radius); padding: 12px 14px; margin-bottom: 12px; }
+  .appeals-dim-card.risk .dim-action { border-left: 3px solid #cf6b4f; }
+  .appeals-dim-card.opportunity .dim-action { border-left: 3px solid #8b931c; }
+  .appeals-dim-card.stable .dim-action { border-left: 3px solid #738499; }
+  .dim-action strong { color: var(--text-main); }
+  .signal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 8px; }
+  .signal-risk, .signal-opportunity { padding: 0; min-height: 100%; }
+  .signal-risk { border-color: #f0d4cb; }
+  .signal-opportunity { border-color: #dfe7b8; }
+  .signal-title { font-size: 15px; font-weight: 700; margin: 0; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.9); }
+  .signal-risk .signal-title { background: #fff2ef; color: #c65b3d; }
+  .signal-opportunity .signal-title { background: #f4f8e6; color: #7c880d; }
+  .signal-desc { font-size: 13px; color: var(--text-sub); margin: 8px; padding: 14px 14px 10px; background: #ffffff; border-radius: var(--card-inner-radius); }
+  .signal-evidence { font-size: 12px; color: var(--text-muted); background: #ffffff; border: 1px solid rgba(229,238,245,0.95); border-radius: var(--card-inner-radius); padding: 10px 12px; margin: 0 8px 8px; }
+  .tier-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 8px; }
+  .customer-tier { padding: 0; min-height: 100%; }
+  .customer-tier.recognized { border-color: #d3ead7; }
+  .customer-tier.opportunity { border-color: #f1dfb6; }
+  .customer-tier.watching { border-color: #dde4ef; }
+  .customer-tier.risk { border-color: #f0d4cb; }
+  .tier-title { font-size: 15px; font-weight: 700; margin: 0; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.9); }
+  .customer-tier.recognized .tier-title { background: #edf8ef; color: #2f855a; }
+  .customer-tier.opportunity .tier-title { background: #fff4e4; color: #c98a15; }
+  .customer-tier.watching .tier-title { background: #f2f5fb; color: #60748a; }
+  .customer-tier.risk .tier-title { background: #fff2ef; color: #c65b3d; }
+  .tier-body { font-size: 13px; color: var(--text-sub); line-height: 1.8; margin: 8px; padding: 14px; background: #ffffff; border-radius: var(--card-inner-radius); }
+  .transform-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .conclusion-item { padding: 0; min-height: 100%; }
+  .transform-grid .conclusion-item:nth-child(1) { border-color: #f0d4cb; }
+  .transform-grid .conclusion-item:nth-child(2) { border-color: #d3ead7; }
+  .transform-grid .conclusion-item:nth-child(3) { border-color: var(--blue-line); }
+  .conclusion-title { font-size: 15px; font-weight: 700; margin: 0; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.9); }
+  .transform-grid .conclusion-item:nth-child(1) .conclusion-title { background: #fff2ef; color: #c65b3d; }
+  .transform-grid .conclusion-item:nth-child(2) .conclusion-title { background: #edf8ef; color: #2f855a; }
+  .transform-grid .conclusion-item:nth-child(3) .conclusion-title { background: var(--blue-shell); color: var(--blue-title); }
+  .conclusion-text { font-size: 14px; color: var(--text-main); line-height: 1.8; margin: 0; padding: 14px 14px 14px; background: #ffffff; border-radius: 0; }
+  .conclusion-evidence { font-size: 12px; color: var(--text-muted); background: #ffffff; border-top: 1px solid #eef3f7; border-radius: 0; padding: 10px 14px 12px; border-left: none; }
+  .upgrade-card-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+  .upgrade-card { padding: 0; border-color: #dfe7b8; min-height: 100%; }
+  .upgrade-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 0; padding: 10px 14px; background: #f4f8e6; border-bottom: 1px solid rgba(255,255,255,0.9); }
+  .upgrade-card-title { font-size: 15px; font-weight: 700; color: #7c880d; line-height: 1.6; }
+  .upgrade-card-label { font-size: 12px; color: var(--text-muted); margin: 10px 12px 0; padding: 0; }
+  .upgrade-card-body { font-size: 13px; color: var(--text-sub); line-height: 1.7; margin: 0 12px 12px; padding: 6px 0 0; background: #ffffff; border-radius: 0; border-top: none; }
+  .upgrade-priority { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; padding: 0; border-radius: 0; font-size: 12px; font-weight: 700; white-space: nowrap; background: transparent; }
+  .upgrade-priority.high { color: #a18b0d; }
+  .upgrade-priority.medium { color: #7a8c25; }
+  .guide-text { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 32px; padding: 16px; background: #f8fbfd; border: 1px solid #e6eef5; border-radius: 10px; }
+  @media (max-width: 768px) {
+    .appeals-grid { grid-template-columns: 1fr; }
+    .signal-grid { grid-template-columns: 1fr; }
+    .tier-grid { grid-template-columns: 1fr; }
+    .transform-grid { grid-template-columns: 1fr; }
+    .upgrade-card-grid { grid-template-columns: 1fr; }
+    .report-meta { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="report-header">
+  <h1>客户声音报告 — {scope_label}</h1>
+  <div class="report-meta">
+    <div class="meta-item"><strong>时间范围</strong>：{start_date} 至 {end_date}</div>
+    <div class="meta-item"><strong>覆盖范围</strong>：{scope}</div>
+    <div class="meta-item"><strong>样本量</strong>：销售记录 {sales_record_count} 条 / 会议记录 {meeting_count} 条</div>
+    <div class="meta-item"><strong>分析视角</strong>：CEO/管理层</div>
+    <div class="meta-item"><strong>置信度</strong>：{confidence_note}</div>
+  </div>
+</div>
+
+<div class="report-body">
+  <h2 class="section-title">一、听见客户声音（Hear）</h2>
+  <h3 class="subsection-title">六维总览</h3>
+  <div class="dimension-overview-list">
+    <div class="dimension-overview-item"><div class="overview-text"><strong>新需求（痛点）</strong>：共提及 {pain_count} 次，核心聚焦 {pain_core_message}，整体以 {pain_signal} 信号为主；当前主要风险是 {pain_risk}，原因是 {pain_risk_reason}。</div></div>
+    <div class="dimension-overview-item"><div class="overview-text"><strong>不满</strong>：共提及 {dissatisfaction_count} 次，核心聚焦 {dissatisfaction_core_message}，整体以 {dissatisfaction_signal} 信号为主；当前主要风险是 {dissatisfaction_risk}，原因是 {dissatisfaction_risk_reason}。</div></div>
+    <div class="dimension-overview-item"><div class="overview-text"><strong>竞品</strong>：共提及 {competition_count} 次，核心聚焦 {competition_core_message}，整体以 {competition_signal} 信号为主；当前主要风险是 {competition_risk}，原因是 {competition_risk_reason}。</div></div>
+    <div class="dimension-overview-item"><div class="overview-text"><strong>趋势</strong>：共提及 {trend_count} 次，核心聚焦 {trend_core_message}，整体以 {trend_signal} 信号为主；当前主要风险是 {trend_risk}，原因是 {trend_risk_reason}。</div></div>
+    <div class="dimension-overview-item"><div class="overview-text"><strong>认可</strong>：共提及 {recognition_count} 次，核心聚焦 {recognition_core_message}，整体以 {recognition_signal} 信号为主；当前主要风险是 {recognition_risk}，原因是 {recognition_risk_reason}。</div></div>
+    <div class="dimension-overview-item"><div class="overview-text"><strong>期望</strong>：共提及 {expectation_count} 次，核心聚焦 {expectation_core_message}，整体以 {expectation_signal} 信号为主；当前主要风险是 {expectation_risk}，原因是 {expectation_risk_reason}。</div></div>
+  </div>
+
+  <h3 class="subsection-title">主要问题清单</h3>
+  <div class="issue-list-card">
+    <div class="issue-list-title">按提及频率排序的高频客户问题</div>
+    <ul class="issue-list">
+      <li><strong>{问题分类1}：</strong>{问题描述1}；（至少 {问题客户数1} 个客户累计提出 {问题次数1} 次）。</li>
+      <li><strong>{问题分类2}：</strong>{问题描述2}；（至少 {问题客户数2} 个客户累计提出 {问题次数2} 次）。</li>
+      <li><strong>{问题分类3}：</strong>{问题描述3}；（至少 {问题客户数3} 个客户累计提出 {问题次数3} 次）。</li>
+      <li><strong>{问题分类4}：</strong>{问题描述4}；（至少 {问题客户数4} 个客户累计提出 {问题次数4} 次）。</li>
+      <li><strong>{问题分类5}：</strong>{问题描述5}；（至少 {问题客户数5} 个客户累计提出 {问题次数5} 次）。</li>
+    </ul>
+  </div>
+
+  <h2 class="section-title">二、理解客户声音（Understand）</h2>
+  <h3 class="subsection-title">$APPEALS 八维分析</h3>
+  <div class="appeals-grid">
+    <div class="appeals-dim-card risk">
+      <div class="dim-card-header">
+        <span class="dim-name">价格竞争与价值感知（Price）</span>
+        <span class="dim-signal-tag risk">🔴 风险信号</span>
+      </div>
+      <p class="dim-summary"><strong>提及统计：</strong>本周期该维度共提及 {voice_count} 次，涉及 {customer_count} 个客户/商机，当前以 {positive_or_negative} 信号为主；核心关注点是 {core_message}，当前风险为 {risk}，主要原因是 {risk_reason}。</p>
+      <ul class="dim-voices">
+        <li>{客户或商机A}：{真实反馈声音1}</li>
+        <li>{客户或商机B}：{真实反馈声音2}</li>
+        <li>{客户或商机C}：{真实反馈声音3，可选}</li>
+      </ul>
+      <div class="dim-action"><strong>行动建议：</strong>{action_advice}</div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">风险 / 机会信号</h3>
+  <div class="signal-grid">
+    <div class="signal-risk">
+      <div class="signal-title">🔴 {风险标题}</div>
+      <div class="signal-desc">{风险描述}</div>
+      <div class="signal-evidence">证据：{evidence_description}</div>
+    </div>
+    <div class="signal-opportunity">
+      <div class="signal-title">🟢 {机会标题}</div>
+      <div class="signal-desc">{机会描述}</div>
+      <div class="signal-evidence">证据：{evidence_description}</div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">客户分层</h3>
+  <div class="tier-grid">
+    <div class="customer-tier recognized">
+      <div class="tier-title">认可型</div>
+      <div class="tier-body">{认可型总结}</div>
+    </div>
+    <div class="customer-tier opportunity">
+      <div class="tier-title">机会型</div>
+      <div class="tier-body">{机会型总结}</div>
+    </div>
+    <div class="customer-tier watching">
+      <div class="tier-title">观望型</div>
+      <div class="tier-body">{观望型总结}</div>
+    </div>
+    <div class="customer-tier risk">
+      <div class="tier-title">风险型</div>
+      <div class="tier-body">{风险型总结}</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">三、持续变革（Transform）</h2>
+  <div class="transform-grid">
+    <div class="conclusion-item">
+      <div class="conclusion-title">{结论短标题1}</div>
+      <div class="conclusion-text">{结论文本1}</div>
+      <div class="conclusion-evidence">📊 支撑证据：{结论证据1}</div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-title">{结论短标题2}</div>
+      <div class="conclusion-text">{结论文本2}</div>
+      <div class="conclusion-evidence">📊 支撑证据：{结论证据2}</div>
+    </div>
+    <div class="conclusion-item">
+      <div class="conclusion-title">{结论短标题3}</div>
+      <div class="conclusion-text">{结论文本3}</div>
+      <div class="conclusion-evidence">📊 支撑证据：{结论证据3}</div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">能力升级方向</h3>
+  <div class="upgrade-card-grid">
+    <div class="upgrade-card">
+      <div class="upgrade-card-top">
+        <div class="upgrade-card-title">{升级方向1}</div>
+        <span class="upgrade-priority high">{优先级1}</span>
+      </div>
+      <div class="upgrade-card-label">依据</div>
+      <div class="upgrade-card-body">{升级依据1}</div>
+    </div>
+    <div class="upgrade-card">
+      <div class="upgrade-card-top">
+        <div class="upgrade-card-title">{升级方向2}</div>
+        <span class="upgrade-priority high">{优先级2}</span>
+      </div>
+      <div class="upgrade-card-label">依据</div>
+      <div class="upgrade-card-body">{升级依据2}</div>
+    </div>
+    <div class="upgrade-card">
+      <div class="upgrade-card-top">
+        <div class="upgrade-card-title">{升级方向3}</div>
+        <span class="upgrade-priority medium">{优先级3}</span>
+      </div>
+      <div class="upgrade-card-label">依据</div>
+      <div class="upgrade-card-body">{升级依据3}</div>
+    </div>
+  </div>
+
+  <div class="guide-text">
+    💡 如需针对特定维度（如痛点、竞品、不满）展开深度分析，或调整时间范围/人员范围重新生成报告，随时告知。输入「展开【维度名】」可查看该维度完整 5 卡片分析。
+  </div>
+</div>
+
+</body>
+</html>

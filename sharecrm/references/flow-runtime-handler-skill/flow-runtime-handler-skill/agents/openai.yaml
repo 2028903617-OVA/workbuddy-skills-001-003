@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flow Runtime Handler"
+  short_description: "Safely handle approval, BPM, stage, and runtime tasks"
+  default_prompt: "Use $flow-runtime-handler-skill to safely process this workflow runtime task."

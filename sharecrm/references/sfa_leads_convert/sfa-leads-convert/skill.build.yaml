@@ -1,0 +1,15 @@
+version: 1
+
+skill:
+  name: sfa-leads-convert
+  source: SKILL.md
+
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - scripts/**
+
+dependencies:
+  references: []
+  scripts: []

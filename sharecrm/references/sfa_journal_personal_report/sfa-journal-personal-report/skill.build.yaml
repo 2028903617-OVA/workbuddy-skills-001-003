@@ -1,0 +1,46 @@
+version: 1
+skill:
+  name: sfa-journal-personal-report
+  source: SKILL.md
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - "references/**"
+    - "rules/**"
+    - "assets/**"
+    - "memory/**"
+dependencies:
+  references: []
+  scripts: []
+  assets: []
+build:
+  builder_version: v1
+  built_at: "2026-07-03T17:49:33+08:00"
+  source_dir: journalbriefing/sfa-journal-personal-report
+  package: zip
+  included_files:
+    - SKILL.md
+    - assets/personal_report_daily_mock_preview.html
+    - assets/personal_report_monthly_mock_preview.html
+    - assets/personal_report_template.html
+    - assets/personal_report_weekly_mock_preview.html
+    - memory/TEMPLATE.md
+    - references/crm_cli_reference.md
+    - references/crm_common_fields.md
+    - references/html_responsive_design_reference.md
+    - references/journal_object_reference.md
+    - references/personal_kpi_benchmarks.md
+    - references/report_periods.md
+    - rules/R01_period_router.md
+    - rules/R02_daily_report.md
+    - rules/R03_weekly_report.md
+    - rules/R04_monthly_report.md
+    - rules/R05_todo_reconciliation.md
+    - rules/R06_personal_risk_detection.md
+    - rules/R07_next_action.md
+    - rules/R08_person_scope_and_coverage.md
+    - rules/R09_journal_storage_confirmation.md
+    - rules/R10_html_report_output.md
+  resolved_dependencies: []
+  constraints: {}

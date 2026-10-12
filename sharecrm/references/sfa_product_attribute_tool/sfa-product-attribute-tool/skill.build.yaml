@@ -1,0 +1,22 @@
+version: 1
+skill:
+  name: sfa-product-attribute-tool
+  source: SKILL.md
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - "scripts/**"
+dependencies:
+  references: []
+  scripts: []
+build:
+  builder_version: v1
+  built_at: "2026-07-17T10:57:41.093756+00:00"
+  source_dir: product/sfa-product-attribute-tool
+  package: zip
+  included_files:
+    - SKILL.md
+    - scripts/query_id_by_name_batch.py
+  resolved_dependencies: []
+  constraints: {}

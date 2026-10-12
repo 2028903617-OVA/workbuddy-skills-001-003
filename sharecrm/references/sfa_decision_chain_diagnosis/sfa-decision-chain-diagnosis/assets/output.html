@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>华东制造集团 ERP 升级项目 - 决策链诊断报告</title>
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#1d4ed8;--primary-deep:#163a63;--primary-light:#eff6ff;--text:#1f2937;--text-muted:#6b7280;--bg:#f5f7fb;--card:#ffffff;--border:#e5e7eb;--toc-width:236px}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:#334155;line-height:1.65;padding:0}
+.cover{background:linear-gradient(135deg,#0f172a 0%,#163a63 45%,#1d4ed8 100%);color:#fff;padding:28px 20px 0;position:relative;overflow:hidden}
+.cover-inner{max-width:1320px;margin:0 auto;padding:12px 28px 20px;border-radius:18px 18px 0 0;position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a 0%,#163a63 45%,#1d4ed8 100%)}
+.cover-inner::after{content:"";position:absolute;right:-90px;top:-90px;width:340px;height:340px;border-radius:50%;background:rgba(255,255,255,.05)}
+.cover-head{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:24px}.cover-title-block{display:flex;flex-direction:column;gap:10px}.eyebrow{font-size:13px;letter-spacing:3px;text-transform:uppercase;opacity:.72;margin-bottom:0}.cover h1{font-size:32px;font-weight:700;margin-bottom:0}
+.cover-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 28px;font-size:12px;opacity:.72;position:relative;z-index:1;margin-top:0}.cover-meta div{display:flex;gap:8px}.cover-meta dt{opacity:.6;white-space:nowrap}.cover-meta dd{font-weight:500}.head-tags{margin-top:0;display:flex;flex-direction:column;gap:8px;position:relative;z-index:1}.head-tag-group{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}.head-tag-title{font-size:12px;font-weight:700;color:rgba(255,255,255,.82);line-height:28px;white-space:nowrap}.head-tag{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.2}.head-tag-good{background:rgba(220,252,231,.96);color:#166534;border:1px solid #bbf7d0}.head-tag-bad{background:rgba(254,226,226,.96);color:#b91c1c;border:1px solid #fecaca}
+.pill-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;position:relative;z-index:1}.pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700}.pill-slate{background:#e2e8f0;color:#475569}.pill-amber{background:#fef3c7;color:#b45309}
+.layout{display:flex;max-width:1320px;margin:0 auto;min-height:100vh}.toc{width:var(--toc-width);flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 16px 28px 24px;background:var(--card);border-right:1px solid var(--border)}.toc-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:16px}.toc a{display:block;padding:7px 10px;color:var(--text-muted);text-decoration:none;border-radius:6px;margin-bottom:2px;transition:all .15s;border-left:2px solid transparent;font-size:13px}.toc a:hover{color:var(--primary);background:var(--primary-light)}.toc a.active{color:var(--primary);background:var(--primary-light);border-left-color:var(--primary);font-weight:600}
+.container{flex:1;min-width:0;max-width:none;margin:0;background:transparent;border-radius:0;box-shadow:none;overflow:visible}
+.header,.header-top{display:none}
+.win-rate-box{min-width:148px;display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0}.win-rate-score-card{text-align:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:16px 18px;backdrop-filter:blur(6px);width:100%}.win-rate-num{font-size:34px;font-weight:800;line-height:1;white-space:nowrap}.win-rate-denominator{font-size:18px;font-weight:700}.win-rate-grade-wrap{display:flex;align-items:center;gap:8px;position:relative}.win-rate-grade-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.82);letter-spacing:.02em}.win-rate-grade-text{font-size:14px;font-weight:800;line-height:1;color:#fff;text-shadow:0 1px 2px rgba(15,23,42,.18)}.win-rate-grade-text.is-danger{color:#ef4444}.win-rate-grade-text.is-warn{color:#f59e0b}.win-rate-grade-text.is-good{color:#22c55e}.win-rate-grade-text.is-default{color:#f8fafc}.grade-help{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;border:1px solid rgba(255,255,255,.38);background:rgba(255,255,255,.12);color:#fff;font-size:11px;font-weight:700;cursor:pointer;user-select:none}.grade-help-tip{position:absolute;right:0;top:calc(100% + 8px);width:240px;padding:10px 12px;border-radius:10px;background:#fff;color:#334155;border:1px solid rgba(148,163,184,.25);box-shadow:0 12px 32px rgba(15,23,42,.2);font-size:12px;line-height:1.6;opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .18s ease,transform .18s ease;z-index:5}.grade-help-tip strong{color:#0f172a}.grade-help:hover .grade-help-tip,.grade-help:focus-within .grade-help-tip,.grade-help.is-open .grade-help-tip{opacity:1;transform:translateY(0);pointer-events:auto}.win-rate-label{font-size:12px;opacity:.82;margin-top:8px}
+.content{padding:36px 40px 60px}.section{margin-bottom:32px}.section:last-child{margin-bottom:0}.section-title{font-size:22px;font-weight:700;color:#1f2937;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--primary);display:flex;align-items:center;gap:10px}.section-title .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:linear-gradient(135deg,var(--primary-deep),var(--primary));color:#fff;border-radius:8px;font-size:13px;font-weight:700;flex-shrink:0}
+.conclusion-box{background:var(--primary-light);border-left:4px solid var(--primary);border-radius:0 10px 10px 0;padding:20px 24px;margin-bottom:20px}.conclusion-box h3{font-size:15px;font-weight:700;color:var(--primary);margin-bottom:12px}.conclusion-box p{font-size:14px;color:#334155;line-height:1.8}.conclusion-box ul{list-style:none;margin:0;padding-left:0;font-size:14px;color:#334155;line-height:1.8}.conclusion-box li{margin:2px 0}.key-insight{font-size:14px;font-weight:600;color:var(--primary);margin:8px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden}th{background:#f1f5f9;padding:10px 14px;text-align:left;font-weight:700;color:#475569;border-bottom:2px solid var(--border);font-size:12px;white-space:nowrap}td{padding:10px 14px;border-bottom:1px solid #eef2f7;color:#475569;vertical-align:top}tr:hover{background:#fafbff}.table-wrap{overflow-x:auto}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}.tag-p0{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}.tag-p1{background:#fffbeb;color:#d97706;border:1px solid #fde68a}.tag-p2{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}.tag-confirmed{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}.tag-inferred{background:#fffbeb;color:#d97706;border:1px solid #fde68a}.tag-unknown{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}.alert-box{border-radius:10px;padding:14px 18px;margin:12px 0;font-size:13px;line-height:1.8}.alert-red{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}.alert-amber{background:#fffbeb;border:1px solid #fde68a;color:#92400e}.alert-blue{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+.footer-note{font-size:13px;color:#475569;margin-top:30px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:#fff}
+@media (max-width:1100px){.layout{display:block}.toc{display:none}.content{padding:28px 20px 48px}.cover{padding:20px 12px 0}.cover-inner{padding:22px 20px 26px;border-radius:16px 16px 0 0}.cover-head{display:block}.win-rate-box{margin-top:18px}}
+
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="cover-inner">
+    <div class="cover-head">
+      <div class="cover-title-block">
+        <div class="eyebrow">Decision Chain Diagnosis Report</div>
+        <h1>华东制造集团 ERP 升级项目 · 决策链诊断</h1>
+        <div class="head-tags">
+          <div class="head-tag-group">
+            <span class="head-tag-title">积极信号</span>
+            <span class="head-tag head-tag-good">Sponsor 已识别</span>
+            <span class="head-tag head-tag-good">业务方KP 已覆盖</span>
+          </div>
+          <div class="head-tag-group">
+            <span class="head-tag-title">风险信号</span>
+            <span class="head-tag head-tag-bad">最高决策者未触达</span>
+            <span class="head-tag head-tag-bad">采购方未覆盖</span>
+            <span class="head-tag head-tag-bad">Coach 深度不足</span>
+          </div>
+        </div>
+        <dl class="cover-meta">
+          <div><dt>诊断日期</dt><dd>2026-06-25</dd></div>
+        </dl>
+      </div>
+      <div class="win-rate-box">
+        <div class="win-rate-score-card">
+          <div class="win-rate-num">17<span class="win-rate-denominator">/30</span></div>
+          <div class="win-rate-label">综合评分</div>
+        </div>
+        <div class="win-rate-grade-wrap">
+          <span class="win-rate-grade-label">评级</span>
+          <div class="win-rate-grade-text is-danger">危险</div>
+          <button class="grade-help" type="button" aria-label="查看评级依据" aria-expanded="false">
+            i
+            <div class="grade-help-tip"><strong>评级依据：</strong>综合评分 17/30，依据评分区间规则，12-17 分对应“危险”。</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="layout">
+  <aside class="toc">
+    <div class="toc-title">目录</div>
+    <a href="#section-overview" class="active">一、核心诊断结论</a>
+    <a href="#section-score">二、决策链诊断结果</a>
+    <a href="#section-root-cause">三、根因分析</a>
+    <a href="#section-risk">四、关键风险与应对策略</a>
+    <a href="#section-actions">五、下一步动作</a>
+  </aside>
+  <div class="container">
+    <div class="content">
+
+<div class="section" id="section-overview">
+  <div class="section-title"><span class="num">一</span>核心诊断结论</div>
+  <div class="conclusion-box">
+    <p><strong>一句话结论：</strong>项目存在明确预算窗口，但当前最高决策者未被有效触达，Coach 线索浅、反对者画像不完整，若继续只围绕接口人推进，极易在采购前被竞争对手截胡。</p>
+    <div class="key-insight">决策链三要素：</div>
+    <ul>
+      <li>必须尽快确认并触达真正拍板的最高决策者，不能继续把流程型联系人当成最终拍板人。</li>
+      <li>需要把现有“愿意协调”的业务经理经营成可提供内部情报与推进路径的 Coach。</li>
+      <li>必须补齐采购与 IT 反对者的真实立场，否则后续方案与报价阶段将持续被动。</li>
+    </ul>
+    <div class="key-insight">关键行动项：</div>
+    <ul>
+      <li>本周由销售总监牵头争取一次业务 VP 级别会面，验证拍板链路。</li>
+      <li>两周内围绕业务经理建立 Coach 经营计划，验证其真实影响范围和内部盟友。</li>
+      <li>在下次方案会前补齐采购、IT 安全与实施接口人的顾虑清单，避免被隐性反对者放大风险。</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section" id="section-score">
+  <div class="section-title"><span class="num">二</span>决策链诊断结果</div>
+  <div class="key-insight">三底线量化评分</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>底线</th><th style="text-align:center">得分</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>决策者覆盖</td><td style="text-align:center;font-weight:700">6/10</td><td>已识别业务 VP 为高概率最高决策层，但尚未直接沟通，当前主要停留在接口人与业务经理层面。</td></tr>
+        <tr><td>Coach经营深度</td><td style="text-align:center;font-weight:700">5/10</td><td>业务经理愿意配合，但仍偏信息转述角色，尚未形成稳定内线与强背书。</td></tr>
+        <tr><td>反对者识别</td><td style="text-align:center;font-weight:700">6/10</td><td>已感知采购压价与 IT 安全部门顾虑，但具体反对者身份和立场仍有 待补充 项。</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="alert-box alert-blue"><strong>判定依据：</strong>CRM 商机联系人、销售记录、组织关系与用户补充事实交叉判断</div>
+
+  <div class="key-insight">决策链覆盖地图</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>角色</th><th>姓名</th><th>职位</th><th>支持度</th><th>影响度</th><th>覆盖状态</th></tr></thead>
+      <tbody>
+        <tr><td>Sponsor</td><td>周敏</td><td>业务经理</td><td><span class="tag tag-confirmed">高</span></td><td><span class="tag tag-inferred">中</span></td><td><span class="tag tag-inferred">部分覆盖</span></td></tr>
+        <tr><td>最高决策者</td><td>待补充</td><td>业务 VP（高概率）</td><td><span class="tag tag-unknown">无法判断</span></td><td><span class="tag tag-confirmed">高</span></td><td><span class="tag tag-unknown">未覆盖</span></td></tr>
+        <tr><td>业务方KP</td><td>周敏</td><td>业务经理</td><td><span class="tag tag-confirmed">高</span></td><td><span class="tag tag-inferred">中</span></td><td><span class="tag tag-confirmed">已覆盖</span></td></tr>
+        <tr><td>IT方KP</td><td>刘工</td><td>IT 架构负责人</td><td><span class="tag tag-inferred">中</span></td><td><span class="tag tag-confirmed">高</span></td><td><span class="tag tag-inferred">部分覆盖</span></td></tr>
+        <tr><td>采购方</td><td>待补充</td><td>采购经理</td><td><span class="tag tag-unknown">无法判断</span></td><td><span class="tag tag-inferred">中</span></td><td><span class="tag tag-unknown">未覆盖</span></td></tr>
+        <tr><td>项目接口人</td><td>陈晨</td><td>实施 PM</td><td><span class="tag tag-inferred">中</span></td><td><span class="tag tag-inferred">中</span></td><td><span class="tag tag-confirmed">已覆盖</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="key-insight">真假决策者校验</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>结论</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>当前识别的最高决策者是否可靠</td><td>待补充</td><td>现阶段只能判断业务 VP 具有高概率拍板权，但无直接对话证据。</td></tr>
+        <tr><td>是否存在把流程角色误判为拍板角色的风险</td><td>高</td><td>当前沟通中心集中在业务经理与实施 PM，存在把推进角色误认为拍板角色的明显风险。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="key-insight">隐性权力中心观察</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>项目</th><th>结论</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>是否存在隐性权力中心</td><td>是</td><td>从需求变更与会议纪要反馈看，IT 架构负责人对关键方案选择具有超出职位表述的影响力。</td></tr>
+        <tr><td>识别线索</td><td>方案讨论多次回到 IT 架构意见</td><td>销售记录中多次提到“先过刘工这一关”，说明其对推进节奏有强干预能力。</td></tr>
+        <tr><td>应对思路</td><td>同时经营显性 Sponsor 与隐性权力中心</td><td>在保留业务价值叙事的同时，补齐技术与实施风险闭环，降低其否决概率。</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section" id="section-root-cause">
+  <div class="section-title"><span class="num">三</span>根因分析</div>
+  <div class="section" style="margin-bottom:20px">
+    <div class="key-insight">决策者覆盖问题</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>问题</th><th>根因</th><th>解决方法</th></tr></thead>
+        <tbody>
+          <tr><td>最高决策者未直接触达</td><td>团队默认把业务经理视为拍板人，未继续上探组织链路。</td><td>通过 Sponsor 借力安排 VP 级会面，验证真实拍板与否决机制。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="section" style="margin-bottom:20px">
+    <div class="key-insight">Coach经营深度问题</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>问题</th><th>根因</th><th>解决方法</th></tr></thead>
+        <tbody>
+          <tr><td>现有业务经理更像协助者而非内线</td><td>沟通内容偏项目进度与资料配合，缺乏对其个人目标和内部资源的经营。</td><td>围绕其 KPI、风险承担和内部竞争压力设计专属支持动作，提升其主动站台意愿。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="section" style="margin-bottom:20px">
+    <div class="key-insight">反对者识别问题</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>问题</th><th>根因</th><th>解决方法</th></tr></thead>
+        <tbody>
+          <tr><td>采购与 IT 安全部门真实顾虑未拆清</td><td>当前销售记录更多聚焦方案价值，对反对意见收集不足。</td><td>在下次会前分别访谈采购、IT 与实施接口人，建立反对者清单与应对话术。</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="section-risk">
+  <div class="section-title"><span class="num">四</span>关键风险与应对策略</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>风险</th><th>影响程度</th><th>应对策略</th><th>话术要点</th></tr></thead>
+      <tbody>
+        <tr><td>最高决策者长期未触达，关键节点无法锁单</td><td><span class="tag tag-p0">高</span></td><td>优先借 Sponsor 安排上探会面，验证拍板链路。</td><td>“当前推进节奏已经接近报价窗口，若不尽快对齐拍板标准，后续投入都可能偏离真正决策点。”</td></tr>
+        <tr><td>Coach 经营浅，内部情报持续滞后</td><td><span class="tag tag-p1">中</span></td><td>围绕业务经理的个人目标与风险缓释做深度经营。</td><td>“我们希望先帮您把内部推进阻力拆清，再共同准备对上汇报材料。”</td></tr>
+        <tr><td>采购与 IT 反对意见在后期集中爆发</td><td><span class="tag tag-p1">中</span></td><td>提前建立反对者地图与标准化应对话术。</td><td>“请提前告诉我们最可能卡住项目的条线，我们先把风险项准备成可解释方案。”</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section" id="section-actions">
+  <div class="section-title"><span class="num">五</span>建议动作</div>
+  <div class="alert-box alert-blue"><strong>说明：</strong>建议动作用于补全决策链并建立 Coach 经营深度；“目的”列需对应三底线量化评分中待解决的具体问题。</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>优先级</th><th>动作</th><th>目的</th><th>时间</th><th>负责人/对象</th><th>完成标志</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag tag-p0">P0</span></td><td>由销售总监发起对 Sponsor 的一对一复盘</td><td>解决决策者覆盖维度中最高决策者未触达的问题</td><td>本周</td><td>Sponsor / 销售总监</td><td>确认最高决策者与会面路径</td></tr>
+        <tr><td><span class="tag tag-p1">P1</span></td><td>围绕业务经理设计 Coach 经营计划</td><td>解决 Coach经营深度维度中内线经营不足的问题</td><td>两周内</td><td>业务经理</td><td>明确其个人诉求与内部资源</td></tr>
+        <tr><td><span class="tag tag-p2">P2</span></td><td>补齐采购、IT安全、实施接口人的顾虑清单</td><td>解决反对者识别维度中反对者画像不完整的问题</td><td>下次方案会前</td><td>采购方 / IT方KP / 接口人</td><td>形成三方顾虑与应对话术清单</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer-note">📎 本报告遵循 SFA 决策链诊断标准（sfa-decision-chain-diagnosis）。正文中的“待补充 / 无法判断 / ⚠️ 推断”仅用于诊断梳理，需后续验证。</div>
+
+    </div>
+  </div>
+</div>
+<script>
+document.querySelectorAll('.grade-help').forEach((button) => {
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const isOpen = button.classList.toggle('is-open');
+    button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+});
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.grade-help.is-open').forEach((button) => {
+    button.classList.remove('is-open');
+    button.setAttribute('aria-expanded', 'false');
+  });
+});
+</script>
+</body>
+</html>

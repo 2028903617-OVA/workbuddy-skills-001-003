@@ -1,0 +1,17 @@
+version: 1
+
+skill:
+  name: leads-convert-validate
+  source: SKILL.md
+
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - scripts/**
+    - references/**
+    - templates/**
+
+dependencies:
+  references: []
+  scripts: []

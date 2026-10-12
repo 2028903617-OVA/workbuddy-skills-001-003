@@ -1,0 +1,20 @@
+version: 1
+skill:
+  name: sfa-data-convert
+  source: SKILL.md
+release:
+  package: zip
+  include:
+    - SKILL.md
+dependencies:
+  references: []
+  scripts: []
+build:
+  builder_version: v1
+  built_at: "2026-06-12T10:48:36.283069+00:00"
+  source_dir: common/sfa-data-convert
+  package: zip
+  included_files:
+    - SKILL.md
+  resolved_dependencies: []
+  constraints: {}

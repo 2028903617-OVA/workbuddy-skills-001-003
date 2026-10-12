@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}}</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --accent: #ffb400;
+      --accent-soft: #fff8db;
+      --accent-line: #ffe08a;
+      --text: #111827;
+      --text-soft: #374151;
+      --muted: #6b7280;
+      --faint: #9ca3af;
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --card-soft: #fbfcfe;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --green: #059669;
+      --blue: #2563eb;
+      --red: #dc2626;
+      --amber: #d97706;
+      --radius: 8px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+      color: var(--text-soft);
+      background:
+        linear-gradient(180deg, #ffffff 0, var(--bg) 360px),
+        var(--bg);
+    }
+    .report-shell {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 26px 24px 56px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(17, 24, 39, .08);
+      flex: 0 0 auto;
+    }
+    .brand-text {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 780;
+      letter-spacing: 0;
+    }
+    .topbar-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .chip,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--accent);
+      flex: 0 0 auto;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 18px;
+      padding: 22px 0 16px;
+      align-items: start;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      color: var(--text);
+      font-size: 34px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      max-width: 820px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .context-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .context-row span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 3px 9px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .76);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .meta-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .76);
+    }
+    .meta-label {
+      display: block;
+      color: var(--faint);
+      font-size: 11px;
+      font-weight: 760;
+      margin-bottom: 3px;
+    }
+    .meta-value {
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 740;
+      overflow-wrap: anywhere;
+    }
+    .health-card {
+      min-height: 0;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: 0 10px 24px rgba(17, 24, 39, .035);
+    }
+    .health-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+    }
+    .health-score {
+      margin-top: 10px;
+      color: var(--text);
+      font-size: 38px;
+      line-height: 1;
+      font-weight: 820;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .health-grade {
+      display: inline-flex;
+      align-self: flex-start;
+      margin-top: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-line);
+      background: var(--accent-soft);
+      color: #7c5a00;
+      font-size: 12px;
+      font-weight: 780;
+    }
+    .summary-grid,
+    .metric-grid,
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(188px, 1fr));
+      gap: 12px;
+    }
+    .summary-card,
+    .metric-card,
+    .insight-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--card-soft);
+      min-width: 0;
+    }
+    .summary-card::before,
+    .metric-card::before,
+    .insight-card::before {
+      content: "";
+      display: block;
+      width: 30px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--accent);
+      margin-bottom: 10px;
+    }
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 680;
+      margin-bottom: 4px;
+    }
+    .value {
+      color: var(--text);
+      font-weight: 780;
+    }
+    .tabs-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin: 0 0 16px;
+      padding: 10px 0;
+      background: rgba(247, 248, 251, .92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid var(--border);
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0 2px 4px;
+      scrollbar-width: thin;
+    }
+    .tab-button {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 720;
+      padding: 8px 12px;
+      white-space: nowrap;
+      transition: background .16s ease, border-color .16s ease, color .16s ease;
+    }
+    .tab-button:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+    .tab-button[aria-selected="true"] {
+      color: var(--text);
+      background: var(--accent-soft);
+      border-color: var(--accent-line);
+    }
+    .tab-panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 24px rgba(17, 24, 39, .035);
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      color: var(--text);
+      font-size: 20px;
+      line-height: 1.3;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    .section-title::after {
+      content: "";
+      height: 2px;
+      flex: 1 1 auto;
+      min-width: 40px;
+      background: linear-gradient(90deg, var(--accent), rgba(255, 180, 0, 0));
+    }
+    .panel-lead {
+      margin: -4px 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      background: #f9fafb;
+      color: var(--muted);
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 780;
+      white-space: nowrap;
+    }
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid #eef2f7;
+      color: var(--text-soft);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: 0; }
+    ul { margin: 0; padding-left: 20px; }
+    li + li { margin-top: 8px; }
+    .split-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+      gap: 14px;
+      align-items: start;
+    }
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+    .detail-card,
+    .action-card,
+    .risk-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      background: var(--card-soft);
+    }
+    .detail-card h3,
+    .action-card h3,
+    .risk-card h3 {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .tag-p0 { background: #fef2f2; color: var(--red); border-color: #fecaca; }
+    .tag-p1 { background: #fffbeb; color: var(--amber); border-color: #fde68a; }
+    .tag-p2 { background: #eff6ff; color: var(--blue); border-color: #bfdbfe; }
+    .tag-good { background: #ecfdf5; color: var(--green); border-color: #bbf7d0; }
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .p0 { border-top: 3px solid var(--red); }
+    .p1 { border-top: 3px solid var(--amber); }
+    .p2 { border-top: 3px solid var(--blue); }
+    .note {
+      color: var(--muted);
+      font-size: 13px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border-strong);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .team-daily .tab-orders,
+    .team-daily .tab-pipeline,
+    .team-daily #tab-orders,
+    .team-daily #tab-pipeline {
+      display: none;
+    }
+    .team-daily .tabs {
+      justify-content: flex-start;
+    }
+    .team-daily .hero {
+      grid-template-columns: minmax(0, 1fr) 220px;
+    }
+    @media (max-width: 1080px) {
+      .report-shell { padding: 22px 18px 46px; }
+      .hero,
+      .split-grid {
+        grid-template-columns: 1fr;
+      }
+      .health-card { min-height: 0; }
+    }
+    @media (max-width: 760px) {
+      .report-shell { padding: 18px 12px 38px; }
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .topbar-meta { justify-content: flex-start; }
+      .hero { padding: 24px 0 20px; }
+      h1 { font-size: 26px; }
+      .subtitle { font-size: 14px; }
+      .meta-grid,
+      .summary-grid,
+      .metric-grid,
+      .insight-grid,
+      .action-grid {
+        grid-template-columns: 1fr;
+      }
+      .tab-panel { padding: 16px; }
+      .section-title { font-size: 17px; }
+      .section-title::after { display: none; }
+      .tabs-wrap { top: 0; padding-top: 8px; }
+      .tab-button { padding: 8px 10px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .report-shell { max-width: none; padding: 0; }
+      .tabs-wrap { display: none; }
+      .tab-panel {
+        display: block !important;
+        break-inside: avoid;
+        box-shadow: none;
+        border-color: #d1d5db;
+      }
+      .team-daily #tab-orders,
+      .team-daily #tab-pipeline {
+        display: none !important;
+      }
+      .topbar { display: none; }
+      .hero { grid-template-columns: 1fr 240px; }
+    }
+  </style>
+</head>
+<body class="{{period_class}}">
+  <main class="report-shell">
+    <header>
+      <div class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span class="brand-text">{{brand_text}}</span>
+        </div>
+        <div class="topbar-meta">
+          <span class="chip"><span class="status-dot"></span>{{report_type}}</span>
+          <span class="chip">{{time_range}}</span>
+        </div>
+      </div>
+
+      <section class="hero">
+        <div>
+          <div class="eyebrow"><span class="status-dot"></span>{{period_brief_label}}</div>
+          <h1>{{title}}</h1>
+          <p class="subtitle">{{subtitle}}</p>
+          <div class="context-row" aria-label="团队范围">
+            <span>{{team_scope}}</span>
+          </div>
+        </div>
+        <aside class="health-card" aria-label="团队经营健康度">
+          <div class="health-label">{{health_label}}</div>
+          <div class="health-score">{{team_health_score}}</div>
+          <div class="health-grade">{{team_health_grade}}</div>
+        </aside>
+      </section>
+    </header>
+
+    <nav class="tabs-wrap" aria-label="团队报表页签">
+      <div class="tabs" role="tablist">
+        <button class="tab-button" type="button" role="tab" aria-selected="true" aria-controls="tab-overview" data-tab="tab-overview">总览</button>
+        <button class="tab-button tab-orders" type="button" role="tab" aria-selected="false" aria-controls="tab-orders" data-tab="tab-orders">{{orders_label}}</button>
+        <button class="tab-button tab-pipeline" type="button" role="tab" aria-selected="false" aria-controls="tab-pipeline" data-tab="tab-pipeline">{{pipeline_label}}</button>
+        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-ae" data-tab="tab-ae">{{ae_label}}</button>
+        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-accounts" data-tab="tab-accounts">{{accounts_label}}</button>
+        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-risks" data-tab="tab-risks">{{risks_label}}</button>
+        <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-data" data-tab="tab-data">数据说明</button>
+      </div>
+    </nav>
+
+    <section class="tab-panel active" id="tab-overview" role="tabpanel">
+      <h2 class="section-title">{{overview_title}}</h2>
+      <p class="panel-lead">{{overview_lead}}</p>
+      <div class="split-grid">
+        <div class="stack">
+          <div class="insight-card">
+            <span class="label">管理摘要</span>
+            {{executive_summary}}
+          </div>
+          <div class="metric-grid">
+            {{metrics}}
+          </div>
+        </div>
+        <div class="stack">
+          <div class="detail-card">
+            <h3>关键结果</h3>
+            {{key_results}}
+          </div>
+          <div class="detail-card">
+            <h3>本期最重要管理判断</h3>
+            {{management_insights}}
+          </div>
+        </div>
+      </div>
+      <div style="margin-top: 14px;">
+        {{tab_overview}}
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-orders" role="tabpanel">
+      <h2 class="section-title">{{orders_label}}</h2>
+      <p class="panel-lead">{{orders_lead}}</p>
+      {{tab_orders}}
+    </section>
+
+    <section class="tab-panel" id="tab-pipeline" role="tabpanel">
+      <h2 class="section-title">{{pipeline_label}}</h2>
+      <p class="panel-lead">{{pipeline_lead}}</p>
+      {{tab_pipeline}}
+    </section>
+
+    <section class="tab-panel" id="tab-ae" role="tabpanel">
+      <h2 class="section-title">{{ae_label}}</h2>
+      <p class="panel-lead">{{ae_lead}}</p>
+      {{ae_performance}}
+      <div style="margin-top: 14px;">
+        {{tab_ae_performance}}
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-accounts" role="tabpanel">
+      <h2 class="section-title">{{accounts_label}}</h2>
+      <p class="panel-lead">{{accounts_lead}}</p>
+      {{customer_opportunity}}
+      <div style="margin-top: 14px;">
+        {{tab_accounts}}
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-risks" role="tabpanel">
+      <h2 class="section-title">{{risks_label}}</h2>
+      <p class="panel-lead">{{risks_lead}}</p>
+      {{cross_ae_risks}}
+      <div class="action-grid" style="margin-top: 14px;">
+        <div class="action-card p0">
+          <h3><span class="tag tag-p0">P0</span> 主管必须亲自处理</h3>
+          {{p0_actions}}
+        </div>
+        <div class="action-card p1">
+          <h3><span class="tag tag-p1">P1</span> 团队协调处理</h3>
+          {{p1_actions}}
+        </div>
+        <div class="action-card p2">
+          <h3><span class="tag tag-p2">P2</span> 常规跟进</h3>
+          {{p2_actions}}
+        </div>
+      </div>
+      <div style="margin-top: 14px;">
+        {{tab_risks_actions}}
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-data" role="tabpanel">
+      <h2 class="section-title">数据说明</h2>
+      <p class="panel-lead">说明数据来源、统计周期、团队/AE 覆盖、清洗口径和生成时间；不要暴露对象 ApiName 或记录 ID。</p>
+      <div class="note">
+        {{data_note}}
+      </div>
+      <div style="margin-top: 14px;">
+        {{tab_data_note}}
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var buttons = Array.prototype.slice.call(document.querySelectorAll('.tab-button'));
+      var panels = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
+      function activate(id) {
+        buttons.forEach(function (button) {
+          var selected = button.getAttribute('data-tab') === id;
+          button.setAttribute('aria-selected', selected ? 'true' : 'false');
+        });
+        panels.forEach(function (panel) {
+          panel.classList.toggle('active', panel.id === id);
+        });
+      }
+      buttons.forEach(function (button) {
+        button.addEventListener('click', function () {
+          activate(button.getAttribute('data-tab'));
+        });
+      });
+    }());
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+version: 1
+
+skill:
+  name: account-due-diligence-report
+  source: SKILL.md
+
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - references/**
+
+dependencies:
+  references: []
+  scripts: []

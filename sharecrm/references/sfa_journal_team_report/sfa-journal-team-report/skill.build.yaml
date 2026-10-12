@@ -1,0 +1,46 @@
+version: 1
+skill:
+  name: sfa-journal-team-report
+  source: SKILL.md
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - "references/**"
+    - "rules/**"
+    - "assets/**"
+    - "memory/**"
+dependencies:
+  references: []
+  scripts: []
+  assets: []
+build:
+  builder_version: v1
+  built_at: "2026-07-03T17:49:33+08:00"
+  source_dir: journalbriefing/sfa-journal-team-report
+  package: zip
+  included_files:
+    - SKILL.md
+    - assets/team_report_daily_mock_preview.html
+    - assets/team_report_monthly_mock_preview.html
+    - assets/team_report_template.html
+    - assets/team_report_weekly_mock_preview.html
+    - memory/TEMPLATE.md
+    - references/crm_cli_reference.md
+    - references/crm_common_fields.md
+    - references/html_responsive_design_reference.md
+    - references/journal_object_reference.md
+    - references/report_periods.md
+    - references/team_kpi_benchmarks.md
+    - rules/R01_period_router.md
+    - rules/R02_team_daily_report.md
+    - rules/R03_team_weekly_report.md
+    - rules/R04_team_monthly_report.md
+    - rules/R05_team_aggregation.md
+    - rules/R06_cross_ae_risk.md
+    - rules/R07_management_action.md
+    - rules/R08_team_scope_and_coverage.md
+    - rules/R09_team_journal_storage_confirmation.md
+    - rules/R10_html_report_output.md
+  resolved_dependencies: []
+  constraints: {}

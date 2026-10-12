@@ -1,0 +1,53 @@
+version: 1
+skill:
+  name: sfa-account-standard-briefing
+  source: SKILL.md
+release:
+  package: zip
+  include:
+    - SKILL.md
+    - "references/**"
+    - "rules/**"
+    - "assets/**"
+    - "scripts/**"
+    - "memory/**"
+dependencies:
+  references: []
+  scripts:
+    - scripts/render_standard_briefing.py
+    - scripts/validate_standard_briefing.py
+  assets: []
+build:
+  builder_version: v1
+  built_at: "2026-07-13T00:00:00+08:00"
+  source_dir: journalbriefing/sfa-account-standard-briefing
+  package: zip
+  included_files:
+    - SKILL.md
+    - assets/templates/standard_briefing.html
+    - assets/templates/standard_briefing_mock_preview.html
+    - memory/template.md
+    - references/cli_reference.md
+    - references/competitive_reference.md
+    - references/crm_schema.md
+    - references/industry_benchmarks.md
+    - references/html_render_contract.md
+    - references/shared/crm_query_status.md
+    - references/shared/external_intelligence_sources.md
+    - references/shared/html_output_quality_gate.md
+    - references/shared/report_data_sources.md
+    - references/shared/sharecrm_cli_min_loop.md
+    - rules/R01_customer_profile.md
+    - rules/R02_timeline.md
+    - rules/R03_relationship_temperature.md
+    - rules/R04_decision_chain.md
+    - rules/R05_opportunity_overview.md
+    - rules/R06_pain_map.md
+    - rules/R07_competitive_overview.md
+    - rules/R08_open_questions.md
+    - rules/R09_history_financial.md
+    - rules/R10_html_output.md
+    - scripts/render_standard_briefing.py
+    - scripts/validate_standard_briefing.py
+  resolved_dependencies: []
+  constraints: {}

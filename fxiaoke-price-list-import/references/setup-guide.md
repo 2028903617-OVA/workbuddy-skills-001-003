@@ -1,12 +1,17 @@
-# 环境安装与快照刷新指引
+# 环境安装与数据源指引
+
+> ★ **v1.9.0 起能力 1（价目表明细维护）不再需要快照**：改为经连接器/CLI **实时查**系统，确认后直写。
+> 快照只服务**能力 2 / 3**（我方物料匹配、物料名生成）。
 
 ## 依赖清单
 
-| 依赖 id | 类型 | 必需 | 官方主页 | 官方文档 |
+| 依赖 id | 类型 | 必需 | 用途 | 官方主页 |
 |---|---|---|---|---|
-| python-venv | runtime | 是 | https://www.python.org | https://docs.python.org/3/ |
-| openpyxl | local-tool | 是 | https://openpyxl.readthedocs.io | https://openpyxl.readthedocs.io/en/stable/ |
-| fs-server-mcp | mcp | 否（可选增强） | https://www.fxiaoke.com | https://www.fxiaoke.com |
+| python-venv | runtime | 是 | 跑全部脚本 | https://www.python.org |
+| openpyxl | local-tool | 是 | 读源表 / 生成文件 | https://openpyxl.readthedocs.io |
+| sharecrm CLI | local-tool | **能力 1 必需** | 实时查产品/明细（底层 = 连接器服务） | https://www.fxiaoke.com |
+| openapi_client.py | local-tool | **能力 1 写操作必需** | 直写价目表明细 | 见 `openapi-direct-write.md` |
+| fs-server-mcp | mcp | 否（已失效） | 旧渠道，勿用 | — |
 
 ## python-venv 配置
 
@@ -56,7 +61,25 @@
 - 每次正式生成导入文件前，建议重新导出一次两类快照（金蝶 → 纷享同步有延迟，快照越新匹配越准）。
 - 快照日期距今超过 7 天时，脚本在核对清单标注「快照较旧，建议重新导出」。
 
-## 数据源优先级：本地快照 → 连接器兜底
+## 能力 1 的运行依赖（实时查 + 直写）
+
+| 组件 | 位置 | 检查 |
+|---|---|---|
+| node.exe | `~/.workbuddy/binaries/node/versions/22.22.2-6/node.exe` | 存在即可 |
+| sharecrm CLI | `~/.workbuddy/binaries/node/workspace/node_modules/@share-crm/sharecrm-cli/dist/index.js` | 跑一次 `data record query-by-fields` 返回 JSON |
+| 凭证文件 | `C:\Users\Administrator\.workbuddy\fxiaoke-app-003.json` | `openapi_client.py token --cred-file <该文件>` → `errorCode=0` |
+| 出口 IP 白名单 | 自建应用后台 | 变了会报 `20014`，需重配 |
+
+```bash
+# 一次跑通能力 1 的阶段 1（只读）
+python scripts/query_pricebook.py --source <源表.xlsx> --org <组织>
+```
+
+连接器 / CLI 不可用 → **停止**（实时查不了的不能靠猜），不要退回去读快照。
+
+## 能力 2 / 3 的数据源优先级：本地快照 → 连接器兜底
+
+> **仅适用于能力 2 / 3。** 能力 1 已改为实时查（见上节）。
 
 **先用本地快照；只有快照没命中的行才走连接器**（用户 2026-09-28 明确）。不要一上来就查连接器。
 

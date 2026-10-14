@@ -10,7 +10,10 @@
      - 欣暖家组织 → 美的价目表20250901；产品 TCL 彩电 → 品牌列 TCL
      - 乾鑫组织   → 乾鑫价目表20260701；产品 美的空调 → 品牌列 美的
      - 西门子组织 → 西门子价目表20260701；产品 西门子洗碗机 → 品牌列 西门子
-  B. 品牌词表需覆盖 COLMO/东芝/索尼/松下/卡萨帝/科沃斯/长虹/容声/史密斯 等。
+  B. 品牌词表需覆盖 COLMO/东芝/索尼/松下/卡萨帝/科沃斯/长虹/容声/史密斯/大松 等。
+  C. ★ **品牌取值以「产品名称/型号里的品牌」为准**，源表品牌列仅作兜底
+     （2026-10-13 用户明确「按实际的产品名称的品牌为准」→ 旧规则「源表品牌列优先」已作废）。
+     例：源表品牌列写「格力」、产品名「大松电风扇FSZ-S23Bg781」→ 品牌列 大松。
 """
 import os
 import sys
@@ -54,6 +57,18 @@ class TestBrandInference(unittest.TestCase):
             ("长虹电视机75Q70S", "长虹"),
             ("容声多门冰箱BCD-505Q50CZLBD", "容声"),
             ("史密斯净水机WF30D1", "史密斯"),
+        ]
+        for model, expect in cases:
+            with self.subTest(model=model):
+                self.assertEqual(bi.guess_brand_from_model(model), expect,
+                                 f"品牌词表缺少 {expect}：{model}")
+
+    def test_dasong_20261013_brand(self):
+        """2026-10-13 新增品牌：大松（格力子品牌，属真实品牌，须能识别）。"""
+        cases = [
+            ("大松电风扇FSZ-S23Bg781", "大松"),
+            ("大松电饭煲GDCF-40X60C", "大松"),
+            ("大松取暖器NDY-22B", "大松"),
         ]
         for model, expect in cases:
             with self.subTest(model=model):
@@ -463,8 +478,23 @@ class TestBrandResolution(unittest.TestCase):
         self.assertEqual(bi.resolve_brand("", "某不知名热水器X100"), "")
         self.assertEqual(bi.resolve_brand("", ""), "")
 
-    def test_source_brand_column_wins(self):
-        self.assertEqual(bi.resolve_brand("海尔", "容声多门冰箱BCD-505"), "海尔")
+    def test_product_name_brand_wins_over_source_column(self):
+        """★ 2026-10-13 规则反转（用户明确：「品牌按实际的产品名称的品牌为准」）。
+
+        旧规则「源表品牌列优先」**已作废**：原用例断言 海尔，现断言 容声。
+        """
+        self.assertEqual(bi.resolve_brand("海尔", "容声多门冰箱BCD-505"), "容声")
+        # 实战案例：源表写「格力」、产品名是「大松电风扇FSZ-S23Bg781」→ 取 大松
+        self.assertEqual(bi.resolve_brand("格力", "大松电风扇FSZ-S23Bg781"), "大松")
+        # 源表品牌列为空时仍按产品名取值
+        self.assertEqual(bi.resolve_brand("", "大松电风扇FSZ-S23Bg781"), "大松")
+        # 冲突须能被识别（供核对清单留痕）
+        self.assertEqual(bi.src_brand_conflict("格力", "大松电风扇FSZ-S23Bg781"),
+                         ("大松", "格力"))
+        # 两者一致 / 产品名推不出品牌 → 不算冲突
+        self.assertIsNone(bi.src_brand_conflict("格力", "格力空调KFR-35GW"))
+        self.assertIsNone(bi.src_brand_conflict("海尔", "某不知名热水器X100"))
+        self.assertIsNone(bi.src_brand_conflict("", "大松电风扇FSZ-S23Bg781"))
 
 
 class TestTmallXinmaoOrg(unittest.TestCase):

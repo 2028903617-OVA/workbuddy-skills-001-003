@@ -72,6 +72,19 @@ BRAND_EXCLUDE = ['泽锋']
 ZERO_FEE_RECALC_RATE = 0.01
 ZERO_FEE_RECALC_COMPANIES = ['欣暖家']
 
+# === 规则12: 待回款未收齐 → 本期暂不计提带单费 (全部公司) ===
+UNPAID_COL = '待回款金额新'          # 第23列
+FEE_COL = '现场管理/带单费'           # 第12列 (L列)
+GROSS_COL = '毛利合计'               # 第22列, 毛利封顶判定用
+STATUS_UNPAID = '待回款未收齐'        # 带单费暂按0处理, 待款收齐后补算
+STATUS_CAP = '毛利不足已裁剪'         # 按毛利封顶发放
+STATUS_MARGIN_NEG = '毛利≤0不发带单费'  # 合计毛利 ≤0, 整组不发
+DEFERRED_FILL = PatternFill('solid', fgColor='FFC000')   # 橙色底 = 本期调整过带单费的行
+
+# === 规则13: 拆单合并看合计毛利 (同一客户窗口内多单合并判定) ===
+SPLIT_MERGE_COMPANIES = ['西门子']   # 需按客户合并看合计毛利的公司
+MERGE_WINDOW_DAYS = 7                # 同客户订单日期相差 ≤N 天视为同一笔成交(拆单)
+
 
 def read_source(src, ref):
     df = pd.read_excel(src)
@@ -181,6 +194,149 @@ def recalc_zero_fee(df, companies=None, rate=None):
     return df, changed
 
 
+# === 规则12/13 工具 ===
+
+# 订单编号形如 2026-09-29-147825，前 10 位即下单日期
+_ORDER_DATE_RE = re.compile(r'^(\d{4})-(\d{2})-(\d{2})')
+
+
+def _order_date(order_no, confirm_time=None):
+    """取订单日期: 优先用订单编号前缀(YYYY-MM-DD)，回退到确认时间。"""
+    m = _ORDER_DATE_RE.match(str(order_no).strip())
+    if m:
+        try:
+            return pd.Timestamp(f'{m.group(1)}-{m.group(2)}-{m.group(3)}')
+        except Exception:
+            pass
+    try:
+        ts = pd.Timestamp(confirm_time)
+        return pd.NaT if pd.isna(ts) else ts.normalize()
+    except Exception:
+        return pd.NaT
+
+
+def _num(v):
+    """安全转 float，空值/异常一律返回 0.0。"""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return 0.0
+    return 0.0 if pd.isna(f) else f
+
+
+def defer_unpaid_fee(df, unpaid_col=UNPAID_COL, fee_col=FEE_COL):
+    """规则12: 待回款金额 ≠ 0 → 本期不计算带单费，置 0 并打标记。
+
+    带单费原值另存到 _fee_orig，供"暂缓带单费清单"与后续补算使用。
+    返回 (df, 暂缓明细列表)；明细元素为 dict。
+    """
+    df['_fee_status'] = ''
+    df['_fee_orig'] = df[fee_col].apply(_num)
+    rows = []
+    for i, r in df.iterrows():
+        unpaid = _num(r.get(unpaid_col))
+        if round(unpaid, 2) == 0:
+            continue
+        orig = _num(r.get(fee_col))
+        df.at[i, fee_col] = 0.0
+        df.at[i, '_fee_status'] = STATUS_UNPAID
+        rows.append({
+            '销售订单编号': r.get('销售订单编号', ''),
+            '公司': str(r.get('公司', '')).strip(),
+            '负责人主属部门': r.get('负责人主属部门', ''),
+            '负责人': r.get('负责人', ''),
+            '客户名称': r.get('客户名称', ''),
+            '待回款金额新': round(unpaid, 2),
+            '原带单费': round(orig, 2),
+            '调整后带单费': 0.0,
+            '带单费状态': STATUS_UNPAID,
+        })
+    return df, rows
+
+
+def apply_gross_margin_cap(df, companies=None, window_days=None,
+                           gross_col=GROSS_COL, fee_col=FEE_COL):
+    """规则13: 拆单合并看合计毛利，对带单费做封顶。
+
+    同一公司 + 同一客户(名称+电话) + 订单日期相差 ≤ window_days 的多张订单，
+    视为"一次成交被拆成多单"，按组合计毛利判定：
+      · 合计毛利 ≤ 0            → 组内带单费全部置 0（不发）
+      · 0 < 合计毛利 < 合计带单费 → 组内带单费按原比例分摊，总额封顶为合计毛利
+      · 合计毛利 ≥ 合计带单费     → 正常发放，不改动
+    返回 (df, 裁剪明细列表)。
+    """
+    if companies is None:
+        companies = SPLIT_MERGE_COMPANIES
+    if window_days is None:
+        window_days = MERGE_WINDOW_DAYS
+    changes = []
+    for comp in companies:
+        idx = df.index[df['公司'].astype(str).str.strip() == comp]
+        if len(idx) == 0:
+            continue
+        sub = df.loc[idx].copy()
+        sub['_od'] = [
+            _order_date(r.get('销售订单编号'), r.get('确认时间'))
+            for _, r in sub.iterrows()
+        ]
+        for key, g in sub.groupby(['客户名称', '客户电话'], sort=False, dropna=False):
+            g = g.sort_values('_od', kind='mergesort')
+            # 按日期聚类：相邻订单日期差 > window_days 即切开
+            clusters, cur = [], []
+            for _, r in g.iterrows():
+                if cur and pd.notna(r['_od']) and pd.notna(cur[-1][1]) \
+                        and (r['_od'] - cur[-1][1]).days > window_days:
+                    clusters.append(cur)
+                    cur = []
+                cur.append((r.name, r['_od']))
+            if cur:
+                clusters.append(cur)
+
+            for cl in clusters:
+                ids = [c[0] for c in cl]
+                gross = sum(_num(df.at[i, gross_col]) for i in ids)
+                payable = [i for i in ids if _num(df.at[i, fee_col]) > 0]
+                fee_total = sum(_num(df.at[i, fee_col]) for i in payable)
+                if fee_total <= 0:
+                    continue                       # 无可计提（已暂缓/原值即0）
+                tag = f"{g['客户名称'].iloc[0]}"
+                if gross <= 0:
+                    for i in ids:
+                        old = _num(df.at[i, fee_col])
+                        if old == 0:
+                            continue
+                        df.at[i, fee_col] = 0.0
+                        if df.at[i, '_fee_status'] == '':
+                            df.at[i, '_fee_status'] = STATUS_MARGIN_NEG
+                        changes.append({
+                            '销售订单编号': df.at[i, '销售订单编号'],
+                            '公司': comp, '客户名称': tag, '组单数': len(ids),
+                            '合计毛利': round(gross, 2), '合计带单费': round(fee_total, 2),
+                            '原带单费': round(old, 2), '调整后带单费': 0.0,
+                            '带单费状态': STATUS_MARGIN_NEG,
+                        })
+                elif gross < fee_total:
+                    done = 0.0
+                    for n, i in enumerate(payable):
+                        old = _num(df.at[i, fee_col])
+                        if n == len(payable) - 1:
+                            new = round(gross - done, 2)       # 末行兜差，保证总额=合计毛利
+                        else:
+                            new = round(gross * old / fee_total, 2)
+                            done += new
+                        df.at[i, fee_col] = new
+                        if df.at[i, '_fee_status'] == '':
+                            df.at[i, '_fee_status'] = STATUS_CAP
+                        changes.append({
+                            '销售订单编号': df.at[i, '销售订单编号'],
+                            '公司': comp, '客户名称': tag, '组单数': len(ids),
+                            '合计毛利': round(gross, 2), '合计带单费': round(fee_total, 2),
+                            '原带单费': round(old, 2), '调整后带单费': new,
+                            '带单费状态': STATUS_CAP,
+                        })
+    return df, changes
+
+
 # === 格式工具 ===
 HEADER_FONT = Font(name='Arial', bold=True, color='FFFFFF', size=10)
 HEADER_FILL = PatternFill('solid', fgColor='4472C4')
@@ -237,15 +393,30 @@ def format_sheet(ws, ncols, money_indices, has_summary=True, sum_indices=None):
         ws.cell(row=sr, column=1).value = '合计'
 
 
-def write_df_to_sheet(ws, df_data, cols, money_indices, has_summary=True, sum_indices=None):
+def paint_fee_flags(ws, pairs, status_map):
+    """把本期调整过带单费的行，在 L列(现场管理/带单费) 涂橙色底。
+
+    pairs: [(工作表行号, 销售订单编号), ...]
+    """
+    if not status_map:
+        return
+    for row_no, order_no in pairs:
+        if status_map.get(str(order_no).strip()):
+            ws.cell(row=row_no, column=L_COL).fill = DEFERRED_FILL
+
+
+def write_df_to_sheet(ws, df_data, cols, money_indices, has_summary=True, sum_indices=None,
+                      status_map=None):
     for ci, col_name in enumerate(cols, 1):
         ws.cell(row=1, column=ci, value=col_name)
+    pairs = []
     for ri, (_, row) in enumerate(df_data.iterrows()):
         for ci, col_name in enumerate(cols, 1):
             val = row.get(col_name, '')
             if pd.isna(val):
                 val = ''
             ws.cell(row=ri + 2, column=ci, value=val)
+        pairs.append((ri + 2, row.get('销售订单编号', '')))
     if has_summary and len(df_data) > 0:
         if sum_indices is None:
             sum_indices = money_indices
@@ -256,17 +427,21 @@ def write_df_to_sheet(ws, df_data, cols, money_indices, has_summary=True, sum_in
                 ws.cell(row=sr, column=ci, value=f'=SUM({cl}2:{cl}{sr-1})')
         ws.cell(row=sr, column=1, value='合计')
     format_sheet(ws, len(cols), money_indices, has_summary and len(df_data) > 0, sum_indices)
+    paint_fee_flags(ws, pairs, status_map)
 
 
-def write_subfile_with_subtotals(ws, df_data, cols, money_indices, sum_indices, group_col='负责人主属部门'):
+def write_subfile_with_subtotals(ws, df_data, cols, money_indices, sum_indices,
+                                 group_col='负责人主属部门', status_map=None):
     """品牌子文件: 多部门时按部门加'小计'行 + 末尾'合计'行；单部门仅'合计'行。
-    小计/合计行仅 L列(现场管理/带单费) 标黄，其余列只加粗不加底色。"""
+    小计/合计行仅 L列(现场管理/带单费) 标黄，其余列只加粗不加底色。
+    本期调整过带单费的数据行，L列涂橙色底（status_map 非空时）。"""
     ncols = len(cols)
     for ci, col_name in enumerate(cols, 1):
         ws.cell(row=1, column=ci, value=col_name)
 
     current_row = 2
     subtotal_rows = []
+    pairs = []
     n_depts = df_data[group_col].nunique() if len(df_data) > 0 else 0
 
     if n_depts <= 1:
@@ -276,6 +451,7 @@ def write_subfile_with_subtotals(ws, df_data, cols, money_indices, sum_indices, 
                 if pd.isna(val):
                     val = ''
                 ws.cell(row=ri + 2, column=ci, value=val)
+            pairs.append((ri + 2, row.get('销售订单编号', '')))
         if len(df_data) > 0:
             sr = len(df_data) + 2
             for ci in sum_indices:
@@ -283,6 +459,7 @@ def write_subfile_with_subtotals(ws, df_data, cols, money_indices, sum_indices, 
                 ws.cell(row=sr, column=ci, value=f'=SUM({cl}2:{cl}{sr-1})')
             ws.cell(row=sr, column=1, value='合计')
         format_sheet(ws, ncols, money_indices, len(df_data) > 0, sum_indices)
+        paint_fee_flags(ws, pairs, status_map)
         return
 
     for dept, group_df in df_data.groupby(group_col, sort=False):
@@ -293,6 +470,7 @@ def write_subfile_with_subtotals(ws, df_data, cols, money_indices, sum_indices, 
                 if pd.isna(val):
                     val = ''
                 ws.cell(row=current_row, column=ci, value=val)
+            pairs.append((current_row, row.get('销售订单编号', '')))
             current_row += 1
         group_end = current_row - 1
         ws.cell(row=current_row, column=1, value=f'{dept} 小计')
@@ -346,6 +524,8 @@ def write_subfile_with_subtotals(ws, df_data, cols, money_indices, sum_indices, 
             c.font = SUMMARY_FONT
             if col_idx == L_COL:
                 c.fill = SUMMARY_FILL
+    # 本期调整过带单费的数据行 → L列橙色底
+    paint_fee_flags(ws, pairs, status_map)
 
 
 def get_subfile_name(company, dept, pay_map):
@@ -367,6 +547,123 @@ def get_subfile_name(company, dept, pay_map):
     else:
         label = f'{company}（{suffix}）'
     return f'集团联单明细{WEEK_LABEL} - {label}.xlsx'
+
+
+# 清单表列定义（不改主表列结构，调整明细单独成表）
+ADJUST_COLS_DEFER = ['销售订单编号', '公司', '负责人主属部门', '负责人', '客户名称',
+                     '待回款金额新', '原带单费', '调整后带单费', '带单费状态']
+ADJUST_COLS_CAP = ['销售订单编号', '公司', '客户名称', '组单数',
+                   '合计毛利', '合计带单费', '原带单费', '调整后带单费', '带单费状态']
+
+
+def write_adjust_sheet(wb, title, cols, rows):
+    """写带单费调整清单（暂缓/毛利封顶），状态列涂橙色底。"""
+    ws = wb.create_sheet(title)
+    for ci, h in enumerate(cols, 1):
+        c = ws.cell(row=1, column=ci, value=h)
+        c.font = HEADER_FONT
+        c.fill = HEADER_FILL
+        c.border = THIN_BORDER
+        c.alignment = CENTER_ALIGN
+    money_cols = {'待回款金额新', '合计毛利', '合计带单费', '原带单费', '调整后带单费'}
+    for ri, r in enumerate(rows):
+        for ci, h in enumerate(cols, 1):
+            v = r.get(h, '')
+            cell = ws.cell(row=ri + 2, column=ci, value=v)
+            cell.font = NORMAL_FONT
+            cell.border = THIN_BORDER
+            if h in money_cols and isinstance(v, (int, float)):
+                cell.number_format = '#,##0.00'
+    if '带单费状态' in cols:
+        st_ci = cols.index('带单费状态') + 1
+        for ri in range(len(rows)):
+            ws.cell(row=ri + 2, column=st_ci).fill = DEFERRED_FILL
+    widths = {'销售订单编号': 22, '公司': 10, '负责人主属部门': 26, '负责人': 10,
+              '客户名称': 28, '组单数': 8, '待回款金额新': 14, '合计毛利': 12,
+              '合计带单费': 12, '原带单费': 12, '调整后带单费': 14, '带单费状态': 18}
+    for ci, h in enumerate(cols, 1):
+        ws.column_dimensions[get_column_letter(ci)].width = widths.get(h, 14)
+    return ws
+
+
+# === 待回款跟踪清单（跨周提醒：待回款≠0 暂缓的订单，款收齐后再补算带单费）===
+TRACKING_LIST = r'F:/集团联单数据/带单费待回款跟踪清单.xlsx'
+TRACKING_COLS = ['销售订单编号', '公司', '负责人主属部门', '负责人', '客户名称',
+                 '待回款金额', '原带单费', '首次标记周', '状态', '备注']
+
+
+def _load_tracking():
+    """读跟踪清单；不存在或异常则返回空表。"""
+    if not os.path.exists(TRACKING_LIST):
+        return pd.DataFrame(columns=TRACKING_COLS)
+    try:
+        t = pd.read_excel(TRACKING_LIST, dtype={'销售订单编号': str})
+        t.columns = [str(c).strip() for c in t.columns]
+        for c in TRACKING_COLS:
+            if c not in t.columns:
+                t[c] = ''
+        return t[TRACKING_COLS]
+    except Exception:
+        return pd.DataFrame(columns=TRACKING_COLS)
+
+
+def manage_tracking(df, deferred_rows, week_label):
+    """维护《带单费待回款跟踪清单》并在运行时提醒：
+
+    1) 已有跟踪项：本期待回款已归 0 → 标 '已全款-待补算'（提醒补算带单费）；否则提醒仍待回款；
+    2) 本周新暂缓订单 → upsert 进清单（状态 '待核查全款'）；
+    3) 打印提醒清单，供用户核查后补算带单费。
+    """
+    t = _load_tracking()
+
+    unpaid_now = {}
+    for _, r in df.iterrows():
+        oid = str(r['销售订单编号']).strip()
+        v = pd.to_numeric(r.get('待回款金额新'), errors='coerce')
+        unpaid_now[oid] = 0.0 if pd.isna(v) else float(v)
+
+    reminders = []
+    for i in t.index:
+        if str(t.at[i, '状态']).startswith('已完成'):
+            continue
+        oid = str(t.at[i, '销售订单编号']).strip()
+        if oid in unpaid_now and unpaid_now[oid] == 0:
+            if not str(t.at[i, '状态']).startswith('已全款'):
+                t.at[i, '状态'] = '已全款-待补算'
+                t.at[i, '备注'] = f'{week_label} 已全款，可补算带单费'
+            reminders.append((oid, '已全款'))
+        else:
+            reminders.append((oid, '仍待回款'))
+
+    exist = set(t['销售订单编号'].astype(str).str.strip()) if len(t) else set()
+    for r in deferred_rows:
+        oid = str(r['销售订单编号']).strip()
+        if oid in exist:
+            continue
+        t = pd.concat([t, pd.DataFrame([{
+            '销售订单编号': oid, '公司': r['公司'],
+            '负责人主属部门': r['负责人主属部门'], '负责人': r.get('负责人', ''),
+            '客户名称': r['客户名称'],
+            '待回款金额': r['待回款金额新'], '原带单费': r['原带单费'],
+            '首次标记周': week_label, '状态': '待核查全款', '备注': '',
+        }])], ignore_index=True)
+        exist.add(oid)
+
+    os.makedirs(os.path.dirname(TRACKING_LIST), exist_ok=True)
+    t.to_excel(TRACKING_LIST, index=False)
+
+    if reminders:
+        print(f"\n{'='*64}")
+        print(f"⏰ 待回款跟踪提醒（《带单费待回款跟踪清单》共 {len(reminders)} 单）：")
+        for oid, st in reminders:
+            row = t[t['销售订单编号'].astype(str).str.strip() == oid]
+            r = row.iloc[0] if len(row) else None
+            tail = '✅ 已全款 → 请补算带单费' if st == '已全款' else '⏳ 仍有待回款，继续暂缓'
+            if r is not None:
+                print(f"   - {oid} | {r['公司']} | {r['客户名称']} | "
+                      f"待回款 {r['待回款金额']} | {tail}")
+        print(f"{'='*64}")
+    return t
 
 
 def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
@@ -397,12 +694,48 @@ def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
         df = df[~mask].copy()
         print(f'剔除后剩余 {len(df)} 条')
 
+    # 剔除实际金额为0的行（不统计）
+    _amt = pd.to_numeric(df['实际金额新'], errors='coerce').fillna(0)
+    mask_zero_amt = _amt == 0
+    removed_zero_amt = df[mask_zero_amt]
+    if len(removed_zero_amt) > 0:
+        print(f'\n已剔除实际金额为0 {len(removed_zero_amt)} 条（不统计）:')
+        for _, r in removed_zero_amt.iterrows():
+            print(f"  - {r['内部员工姓名']} | {r['公司']} | {r['负责人主属部门']} | 实际金额={r['实际金额新']}")
+    df = df[~mask_zero_amt].copy()
+    print(f'剔除后剩余 {len(df)} 条')
+
     # 指定公司里带单费为0的行，按订单金额 × 系数重算
     df, recalc_rows = recalc_zero_fee(df)
     if recalc_rows:
         print(f'\n已按 {ZERO_FEE_RECALC_RATE:.0%} 重算带单费({ZERO_FEE_RECALC_COMPANIES}) {len(recalc_rows)} 条:')
         for oid, comp, amt, new_fee in recalc_rows:
             print(f"  - {oid} | {comp} | 订单金额 {amt:,.2f} × {ZERO_FEE_RECALC_RATE:.0%} = {new_fee:,.2f}")
+
+    # 规则12: 待回款金额 ≠ 0 → 本期不计算带单费（暂缓，待款收齐后补算）
+    df, deferred_rows = defer_unpaid_fee(df)
+    if deferred_rows:
+        print(f'\n{"="*64}')
+        print(f'⏸️ 待回款金额≠0，本期暂不计提带单费 {len(deferred_rows)} 条（款收齐后补算）:')
+        for r in deferred_rows:
+            print(f"   - {r['销售订单编号']} | {r['公司']} | {r['负责人主属部门']} | "
+                  f"{r['客户名称']} | 待回款 {r['待回款金额新']:,.2f} | 原带单费 {r['原带单费']:,.2f} → 0")
+        print(f'{"="*64}')
+
+    # 规则13: 拆单合并，看合计毛利对带单费封顶
+    df, cap_rows = apply_gross_margin_cap(df)
+    if cap_rows:
+        print(f'\n{"="*64}')
+        print(f'✂️ 合计毛利不足，带单费已按毛利封顶 {len(cap_rows)} 条:')
+        for r in cap_rows:
+            print(f"   - {r['销售订单编号']} | {r['公司']} | {r['客户名称']} | {r['组单数']}单 | "
+                  f"合计毛利 {r['合计毛利']:,.2f} vs 合计带单费 {r['合计带单费']:,.2f} | "
+                  f"带单费 {r['原带单费']:,.2f} → {r['调整后带单费']:,.2f} | {r['带单费状态']}")
+        print(f'{"="*64}')
+
+    # 本期调整过带单费的行（橙色底标记用）
+    status_map = {str(r['销售订单编号']).strip(): str(r['_fee_status'])
+                  for _, r in df.iterrows() if str(r['_fee_status']).strip()}
 
     # 排序: 公司 → 负责人主属部门
     df_sorted = df.sort_values(['公司', '负责人主属部门']).reset_index(drop=True)
@@ -417,21 +750,27 @@ def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
             print(f"   - 部门: {d} | 公司: {row['公司']} | 已填付款公司: {row['内部带单费付款公司']}")
         print(f"{'='*64}")
 
+    # 待回款跟踪清单（跨周提醒：核查是否全款，全款后补算带单费）
+    manage_tracking(df_sorted, deferred_rows, week_label)
+
     # === 主文件 ===
     wb = Workbook()
     wb.remove(wb.active)
 
     ws1 = wb.create_sheet('销售订单数据')
-    write_df_to_sheet(ws1, df_sorted, COLS_18, MONEY_18, sum_indices=SUM_18)
+    write_df_to_sheet(ws1, df_sorted, COLS_18, MONEY_18, sum_indices=SUM_18,
+                      status_map=status_map)
 
     ws2 = wb.create_sheet('集团互联销售明细')
-    write_df_to_sheet(ws2, df_sorted, COLS_22, MONEY_22, sum_indices=SUM_22)
+    write_df_to_sheet(ws2, df_sorted, COLS_22, MONEY_22, sum_indices=SUM_22,
+                      status_map=status_map)
 
     brands = [b for b in ALL_BRANDS if not (remove_dajin and b == '大金')]
     for brand in brands:
         ws_brand = wb.create_sheet(brand)
         brand_df = df_sorted[df_sorted['公司'] == brand].copy()
-        write_df_to_sheet(ws_brand, brand_df, COLS_22, MONEY_22, sum_indices=SUM_22)
+        write_df_to_sheet(ws_brand, brand_df, COLS_22, MONEY_22, sum_indices=SUM_22,
+                          status_map=status_map)
 
     # 人员卡号 sheet
     card_df = pd.read_excel(ref, sheet_name='集团公司人员卡号')
@@ -471,6 +810,12 @@ def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
     ws10.column_dimensions['A'].width = 28
     ws10.column_dimensions['B'].width = 32
 
+    # 带单费调整清单（不改主表列结构，调整明细单独成表）
+    if deferred_rows:
+        write_adjust_sheet(wb, '暂缓带单费清单', ADJUST_COLS_DEFER, deferred_rows)
+    if cap_rows:
+        write_adjust_sheet(wb, '毛利封顶调整清单', ADJUST_COLS_CAP, cap_rows)
+
     main_path = f'{out_dir}/集团联单明细{week_label}.xlsx'
     wb.save(main_path)
     print(f'\nSaved main: {main_path}')
@@ -492,7 +837,8 @@ def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
         sub_wb = Workbook()
         sub_ws = sub_wb.active
         sub_ws.title = 'Sheet1'
-        write_subfile_with_subtotals(sub_ws, sub_df, COLS_22, MONEY_22, sum_indices=SUM_22)
+        write_subfile_with_subtotals(sub_ws, sub_df, COLS_22, MONEY_22, sum_indices=SUM_22,
+                                     status_map=status_map)
         sub_wb.save(sub_path)
         print(f'Sub-file: {sub_name} ({len(sub_df)} 条)')
 
@@ -532,6 +878,14 @@ def build(src, out_dir, week_label, ref=DEFAULT_REF, remove_dajin=False):
     dept_path = f'{out_dir}/带单费汇总_按部门_{week_label}.xlsx'
     dept_wb.save(dept_path)
     print(f'\nSaved dept summary: {dept_path}')
+    if deferred_rows:
+        tot = sum(r['原带单费'] for r in deferred_rows)
+        print(f'\n⏸️ 暂缓计提带单费 {len(deferred_rows)} 条，涉及金额 {tot:,.2f} 元 —— '
+              f'待回款收齐后再补算（已列入主文件《暂缓带单费清单》）')
+    if cap_rows:
+        cut = sum(r['原带单费'] - r['调整后带单费'] for r in cap_rows)
+        print(f'✂️ 毛利封顶裁剪 {len(cap_rows)} 条，减少带单费 {cut:,.2f} 元 '
+              f'（已列入主文件《毛利封顶调整清单》）')
     print(f'\n⚠️ 需手动补填银行卡号: {unmatched}')
 
 

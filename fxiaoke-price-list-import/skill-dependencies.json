@@ -1,9 +1,11 @@
 {
   "schema_version": "1",
+  "skill_version": "1.9.1",
   "capabilities": [
     "源表识别与数据提取",
     "产品匹配",
     "明细查重与新建更新分拆",
+    "价目表明细直写",
     "导入文件生成",
     "产品核对清单生成"
   ],
@@ -13,7 +15,7 @@
       "type": "runtime",
       "required": true,
       "auth_type": "none",
-      "capabilities": ["导入文件生成"],
+      "capabilities": ["源表识别与数据提取"],
       "checks": [
         {"id": "python-version", "type": "python", "required": true, "min_version": "3.10"}
       ],
@@ -26,16 +28,16 @@
         ],
         "verify": "运行 check_environment.py，python 检查项为 ok",
         "security": "无凭据，本地解释器",
-        "verified_at": "2026-09-12",
+        "verified_at": "2026-10-13",
         "applies_to_version": "Python 3.10+"
       },
       "degradation": [
         {
-          "capability": "导入文件生成",
+          "capability": "源表识别与数据提取",
           "trigger": "venv Python 不存在或版本低于 3.10",
           "fallback": "停止流程，提示按 setup steps 创建/修复 venv",
           "user_input": "无",
-          "limitations": "无法生成任何导入文件",
+          "limitations": "无法解析源表、无法生成任何文件",
           "evidence_label": "已验证",
           "recovery": "创建可用 venv 后重跑 check_environment.py",
           "stop_condition": "用户无法提供可用 Python 时终止"
@@ -47,7 +49,7 @@
       "type": "local-tool",
       "required": true,
       "auth_type": "none",
-      "capabilities": ["源表识别与数据提取"],
+      "capabilities": ["源表识别与数据提取", "导入文件生成"],
       "checks": [
         {"id": "openpyxl-import", "type": "python", "required": true, "command": "import openpyxl"}
       ],
@@ -57,7 +59,7 @@
         "steps": ["<venv Python> -m pip install openpyxl"],
         "verify": "check_environment.py 中 openpyxl 检查项为 ok",
         "security": "无凭据，纯本地库",
-        "verified_at": "2026-09-12",
+        "verified_at": "2026-10-13",
         "applies_to_version": "openpyxl 3.1.x"
       },
       "degradation": [
@@ -66,10 +68,83 @@
           "trigger": "import openpyxl 失败",
           "fallback": "needs_setup，仅提示安装命令，不猜测继续",
           "user_input": "无",
-          "limitations": "无法解析源表与快照",
+          "limitations": "无法解析源表",
           "evidence_label": "已验证",
           "recovery": "安装 openpyxl 后重跑 check_environment.py",
           "stop_condition": "安装失败且无替代解析器时终止"
+        }
+      ]
+    },
+    {
+      "id": "sharecrm-cli",
+      "type": "local-tool",
+      "required": true,
+      "auth_type": "host_managed",
+      "capabilities": ["产品匹配", "明细查重与新建更新分拆"],
+      "checks": [
+        {"id": "node-exists", "type": "file", "required": true,
+         "path": "~/.workbuddy/binaries/node/versions/22.22.2-6/node.exe"},
+        {"id": "cli-exists", "type": "file", "required": true,
+         "path": "~/.workbuddy/binaries/node/workspace/node_modules/@share-crm/sharecrm-cli/dist/index.js"}
+      ],
+      "setup": {
+        "official_home_url": "https://www.fxiaoke.com",
+        "official_docs_url": "https://www.fxiaoke.com",
+        "steps": [
+          "WorkBuddy 内置 node + 已安装的 @share-crm/sharecrm-cli，无需额外安装",
+          "验证：node dist/index.js data record query-by-fields --data '{...}' 返回 JSON"
+        ],
+        "verify": "check_environment.py 中 node / sharecrm-cli 检查项为 ok",
+        "security": "CLI 会话由宿主管理，skill 不落任何凭据",
+        "verified_at": "2026-10-13",
+        "applies_to_version": "sharecrm CLI 1.1.17（能力 1 实时查的主通道）"
+      },
+      "degradation": [
+        {
+          "capability": "产品匹配",
+          "trigger": "node 或 CLI 缺失 / 调用失败",
+          "fallback": "停止；实时查不了的不能靠猜，不得退回去读快照",
+          "user_input": "请用户确认 node / CLI 安装路径或恢复环境",
+          "limitations": "能力 1（含能力 2/3 的复核）本轮不可用",
+          "evidence_label": "已验证",
+          "recovery": "环境恢复后重跑 check_environment.py",
+          "stop_condition": "无可用的实时查询通道时终止"
+        }
+      ]
+    },
+    {
+      "id": "openapi-client",
+      "type": "local-tool",
+      "required": true,
+      "auth_type": "credential_file",
+      "capabilities": ["价目表明细直写"],
+      "checks": [
+        {"id": "cred-file-exists", "type": "file", "required": true,
+         "path": "~/.workbuddy/fxiaoke-app-003.json"}
+      ],
+      "setup": {
+        "official_home_url": "https://open.fxiaoke.com",
+        "official_docs_url": "https://open.fxiaoke.com",
+        "steps": [
+          "凭证文件必须落盘（禁在命令行手抄密钥，违反铁律 4）",
+          "验证：openapi_client.py token --cred-file <该文件> → errorCode=0",
+          "公网出口 IP 须在自建应用白名单内，变了会报 20014"
+        ],
+        "verify": "check_environment.py 中 openapi-cred 检查项为 ok",
+        "security": "凭证文件仅本机可读；该文件含 appId/secret，属内部资料，勿外发",
+        "verified_at": "2026-10-13",
+        "applies_to_version": "自建应用（新版 header 鉴权：authorization / x-fs-ea / x-fs-userid）"
+      },
+      "degradation": [
+        {
+          "capability": "价目表明细直写",
+          "trigger": "凭证文件缺失 / token 取不到 / 出口 IP 未在白名单",
+          "fallback": "直写不可用 → 退回「生成 12/8 列导入文件 → 人工数据导入」交付，并明确告知用户",
+          "user_input": "请用户确认凭证文件路径或补白名单",
+          "limitations": "多一道人工导入环节",
+          "evidence_label": "已验证",
+          "recovery": "凭证/白名单恢复后重跑 --apply",
+          "stop_condition": "用户既不要直写也不接受导入文件时终止"
         }
       ]
     },
@@ -78,36 +153,19 @@
       "type": "mcp",
       "required": false,
       "auth_type": "none",
-      "capabilities": ["产品匹配"],
-      "checks": [
-        {"id": "mcp-registered", "type": "mcp", "required": false, "server": "fs-server"},
-        {"id": "mcp-probe", "type": "mcp_probe", "required": true, "server": "fs-server", "target": "get-current-user"}
-      ],
+      "deprecated": true,
+      "capabilities": [],
+      "checks": [],
       "setup": {
         "official_home_url": "https://www.fxiaoke.com",
         "official_docs_url": "https://www.fxiaoke.com",
-        "steps": [
-          "在 WorkBuddy 连接器管理页找到纷享销客连接器并启用、信任",
-          "先调 get-current-user 确认可用性，不要凭记忆判定连接器状态（2026-09-28 教训）",
-          "注意区分渠道：失效的是 fs-server 那条渠道（代理网关/SSE 直连/API 写三路 HTTP 400），另一条纷享销客连接器是可用的"
-        ],
-        "verify": "调用 get-current-user 能返回 ea / tenantId / employeeId 即为可用",
-        "security": "授权与凭据由 WorkBuddy 宿主管理，skill 不接触任何凭据",
+        "steps": ["已失效（代理网关 / SSE 直连 / API 写三路均 HTTP 400），不再使用"],
+        "verify": "不检查",
+        "security": "不接触凭据",
         "verified_at": "2026-09-28",
-        "applies_to_version": "纷享销客连接器（可选增强；仅在本地快照未命中时兜底，不是主数据源）"
+        "applies_to_version": "已废弃 —— 能力 1 改走 sharecrm CLI；能力 2/3 的连接器复核也改用 CLI"
       },
-      "degradation": [
-        {
-          "capability": "产品匹配",
-          "trigger": "连接器不可用 / 调用失败",
-          "fallback": "本地快照本就是主数据源，匹配与查重不受影响；失去的只是「快照未命中时的二次复核」，此时判「金蝶未同步」要在核对清单标注未经连接器复核",
-          "user_input": "快照缺失时请用户提供导出文件或路径",
-          "limitations": "快照日期之后的系统变更不覆盖，核对清单会标注快照日期",
-          "evidence_label": "已验证",
-          "recovery": "连接器恢复后自动恢复兜底能力，无需改 skill 逻辑",
-          "stop_condition": "本地快照与连接器两个数据源都没有时才停止（无底表不做无依据匹配）"
-        }
-      ]
+      "degradation": []
     }
   ],
   "functional_degradations": [
@@ -123,38 +181,48 @@
     },
     {
       "capability": "产品匹配",
-      "trigger": "Downloads 目录找不到有数据的产品对象导出快照，或源表型号在快照中无命中",
-      "fallback": "无快照时产品列直填源表原名并追加『未校验』；无命中时该行标记『金蝶未同步』，只进核对清单不进导入文件",
-      "user_input": "建议用户提供最新产品对象导出，或先在金蝶建好产品并同步",
-      "limitations": "未校验行的产品（必填）列可能与系统主属性不一致，导入可能失败",
-      "evidence_label": "部分验证",
-      "recovery": "提供快照或金蝶同步完成后重跑 build_import.py",
-      "stop_condition": "用户要求保证匹配正确性又拒绝提供快照时终止"
+      "trigger": "源表型号在系统 ProductObj 里查不到（两闸校验后仍无候选）",
+      "fallback": "该行标『产品未同步』并回报用户去金蝶新建；绝不自行 create ProductObj",
+      "user_input": "请用户在金蝶新建该产品并等同步",
+      "limitations": "该行本轮不写入价目表明细",
+      "evidence_label": "已验证",
+      "recovery": "金蝶同步完成后重跑 query_pricebook.py",
+      "stop_condition": "无（其余行照常处理）"
     },
     {
       "capability": "明细查重与新建更新分拆",
-      "trigger": "Downloads 目录找不到有数据的价目表明细导出快照",
-      "fallback": "不做查重，全部行走新建文件，核对清单标注『未查重，可能重复导入』",
-      "user_input": "建议用户提供最新价目表明细导出文件",
-      "limitations": "已有明细可能被重复新建",
+      "trigger": "产品命中了多个候选且无法按长度/品牌收敛",
+      "fallback": "记入核对清单标『候选歧义』并回报用户，不擅自选定",
+      "user_input": "用户指定正确的产品",
+      "limitations": "该行暂不写入",
       "evidence_label": "部分验证",
-      "recovery": "提供明细快照后重跑 build_import.py",
-      "stop_condition": "用户要求保证无重复又拒绝提供快照时终止"
+      "recovery": "用户确认后重跑",
+      "stop_condition": "无（其余行照常处理）"
+    },
+    {
+      "capability": "价目表明细直写",
+      "trigger": "select_one 的 label 转不出码值",
+      "fallback": "原样提交并在核对清单标注『label 未在系统选项中找到，可能被拒』，不静默丢字段",
+      "user_input": "用户确认该 label 是否是系统选项",
+      "limitations": "该行写入可能被服务端拒绝",
+      "evidence_label": "部分验证",
+      "recovery": "补齐选项或改用正确 label 后重跑",
+      "stop_condition": "无"
     },
     {
       "capability": "导入文件生成",
-      "trigger": "识别出的品牌不在启用价目表清单内，或型号未命中分类关键词",
-      "fallback": "价目表列或分类列留空，该行记入核对清单提示人工确认后补填",
-      "user_input": "用户确认品牌/价目表名或产品分类",
-      "limitations": "该行导入文件缺少对应必填或分类值，不能直接导入",
+      "trigger": "识别出的组织不在「组织→价目表」映射表内",
+      "fallback": "停止，报组织名请用户确认（直写通道必须有 pricebook_id）",
+      "user_input": "用户确认组织名或补充新价目表",
+      "limitations": "本轮不产出",
       "evidence_label": "已验证",
-      "recovery": "人工补填，或更新 references 后重跑",
-      "stop_condition": "无（留空不阻断其他行）"
+      "recovery": "更新 references/brand-pricebooks.md 后重跑",
+      "stop_condition": "无法确定组织时终止"
     },
     {
       "capability": "产品核对清单生成",
-      "trigger": "本轮没有任何待同步、重复、分类未匹配或价目表未配置的警示项",
-      "fallback": "不生成核对清单文件，在对话中口头报告『全部通过』及所用快照日期",
+      "trigger": "本轮没有任何待同步、候选歧义、分类未匹配或转码失败的警示项",
+      "fallback": "不生成核对清单文件，在对话中口头报告『全部通过』",
       "user_input": "无",
       "limitations": "无文件留档，仅对话记录",
       "evidence_label": "已验证",

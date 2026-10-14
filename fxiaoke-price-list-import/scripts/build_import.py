@@ -142,7 +142,13 @@ BRAND_KEYWORDS = ["AO史密斯", "A.O.史密斯", "史密斯", "COLMO", "卡萨�
                   "顾家家居", "顾家", "德施曼", "霍尼韦尔", "爱仕达", "好太太",
                   "添可", "德意", "名气", "康佳", "日立", "万和", "小熊", "摩飞",
                   "象印", "永艺", "顶固", "惠达", "希箭", "鹿客", "华为", "小米",
-                  "联想", "OPPO", "SKG", "SHARK"]
+                  "联想", "OPPO", "SKG", "SHARK",
+                  # 2026-10-13 新增：大松（格力子品牌，属真实品牌 → 进词表）
+                  #   背景：「大松电风扇FSZ-S23Bg781」源表品牌列写「格力」，按新规则应以产品名称为准 → 大松
+                  "大松",
+                  # 2026-10-14 新增：追觅
+                  #   背景：「追觅扫地机器人X60PRO智能上下水」词表未收录 → 品牌写入为空，二级兜底失效
+                  "追觅"]
 
 
 def guess_brand_from_model(model):
@@ -152,26 +158,88 @@ def guess_brand_from_model(model):
     return None
 
 
-def resolve_brand(src_brand, model):
+def _src_brand_norm(src_brand):
+    """把源表品牌列归一成品牌词：「英文/中文」取中文段；纯中文原样；纯英文原样。"""
+    raw = (src_brand or "").strip()
+    if not raw:
+        return ""
+    if "/" in raw:
+        zh = [s.strip() for s in raw.split("/")
+              if s.strip() and re.search(r"[\u4e00-\u9fa5]", s)]
+        if zh:
+            return zh[-1]
+    return raw
+
+
+# 产品分类路径的品牌前缀：实测形如 `K-追觅/…`、`K_大金/…`
+_CATEGORY_BRAND_PREFIX = re.compile(r"^[A-Za-z]{1,4}\s*[-_]\s*")
+
+
+def brand_from_category(category):
+    """从**系统产品分类路径的首段**提取品牌 —— 三级兜底的第 ① 级，最可靠。
+
+    ★ 实测（2026-10-14）系统产品 `category`（分类）形如：
+        `K-追觅/K-追觅小家电/K-追觅扫地机器人`   → 追觅
+        `K_大金/K_大金空调/K_大金挂机/…`         → 大金
+      首段去掉 `K-` / `K_` 这类字母前缀后即品牌。
+
+    为什么优先用它：**分类是系统侧已维护好的权威数据**，比「枚举品牌词表」或
+    「拆产品名称」都可靠 —— 词表永远补不全（品牌成百上千），产品名写法又千变万化。
+    价目表明细上的「产品分类」是 quote 字段（`quote_field=product_id__r.category`），
+    自动从产品带出，因此明细侧也能取到同一个值。
+
+    ⚠️ 前提：分类是**按品牌建的首层**。若首段带了品类词（实测 `K-东芝坐便器`），
+    段内命中已知品牌词时取品牌词本身（→ 东芝），避免把品类当品牌。
+    """
+    if not category:
+        return ""
+    seg = str(category).split("/")[0].strip()
+    if not seg:
+        return ""
+    seg = _CATEGORY_BRAND_PREFIX.sub("", seg).strip()
+    if not seg:
+        return ""
+    # ★ 首段可能带品类词（实测 `K-东芝坐便器`）→ 段内含已知品牌词时取品牌词本身。
+    #   长词优先由 BRAND_KEYWORDS 的顺序保证（「AO史密斯」排在「史密斯」前），
+    #   故 `K-AO史密斯热水器` 会正确得到 AO史密斯 而不是 史密斯。
+    return guess_brand_from_model(seg) or seg
+
+
+def resolve_brand(src_brand, model, category=None):
     """品牌 = 产品的**实际品牌**，与「组织」无关。
 
-    源表品牌列 → 型号名推断；**两样都推不出来就返回空串，绝不回退成组织名**
-    （组织只决定「价目表（必填）」列）。品牌列常见三种写法：
-      「Ronshen/容声」→ 取中文段 容声
-      「TCL」        → 没有中文名，原样使用
-      「Siemens」    → 纯英文，先用型号推断中文名，推不出来才原样使用
+    ★★ 取值优先级（2026-10-14 修订：新增第 ① 级「系统产品分类首段」）：
+      ① **系统产品的分类路径首段**（`K-追觅/…` → 追觅）—— 系统已维护，最可靠
+      ② 产品**名称 / 型号**里能识别出的品牌（走 `BRAND_KEYWORDS` 词表）
+      ③ 源表品牌列（「Ronshen/容声」取中文段；「TCL」原样；纯英文原样）
+      ④ 都推不出 → 空串（**绝不回退成组织名**；组织只决定「价目表（必填）」列）
+
+    ⚠️ **与旧规则相反**：旧规则是「源表品牌列优先」，**已作废**。
+       例：源表品牌列写「格力」、产品名为「大松电风扇FSZ-S23Bg781」→ 取 **大松**。
+    ①与②冲突时以①为准（分类是系统侧权威值）。
+    `category=None`（能力 2/3 的快照通道）时行为同旧版：②→③。
     """
+    from_cat = brand_from_category(category)
+    if from_cat:
+        return from_cat
+    from_model = guess_brand_from_model(model)
+    if from_model:
+        return from_model
+    return _src_brand_norm(src_brand)
+
+
+def src_brand_conflict(src_brand, model):
+    """源表品牌列 与「产品名称识别出的品牌」不一致时返回 (产品名品牌, 源表原写法)；一致/无法判定返回 None。"""
+    from_model = guess_brand_from_model(model)
+    if not from_model:
+        return None
     raw = (src_brand or "").strip()
-    if raw:
-        if "/" in raw:
-            zh = [s.strip() for s in raw.split("/")
-                  if s.strip() and re.search(r"[\u4e00-\u9fa5]", s)]
-            if zh:
-                return zh[-1]
-        if re.search(r"[\u4e00-\u9fa5]", raw):
-            return raw
-        return guess_brand_from_model(model) or raw
-    return guess_brand_from_model(model) or ""
+    if not raw:
+        return None
+    src_norm = _src_brand_norm(raw)
+    if src_norm and src_norm != from_model:
+        return (from_model, raw)
+    return None
 
 
 def open_wb(path, data_only=True):
@@ -687,9 +755,15 @@ def main():
     prepared = []          # 逐行匹配结果；先收齐再做「同产品去重闸」，防止同一系统产品被多行命中导致重复导入
     for src in rows:
         # 品牌 = 产品实际品牌，与组织无关：
-        #   源表品牌列优先（含「英文/中文」写法）→ 其次从型号名推断 → **推不出来留空进核对清单**
+        #   **产品名称/型号识别出的品牌优先（2026-10-13 用户明确：「按实际的产品名称的品牌为准」）**
+        #   → 其次源表品牌列（含「英文/中文」写法）→ **都推不出留空进核对清单**
         #   绝不回退成组织名：组织只决定「价目表（必填）」列。
         row_brand = resolve_brand(src["src_brand"], src["model"])
+        _conf = src_brand_conflict(src["src_brand"], src["model"])
+        if _conf:
+            warns.append({"源表型号": src["model"], "品牌": row_brand,
+                          "状态": f"品牌冲突·已按产品名称为准（源表写「{_conf[1]}」）",
+                          "建议": "已取产品名称的品牌；若产品名本身不对，请在金蝶改正后重新同步"})
         # 价目表严格按组织(org)走：同一张价目表内可含多个品牌（如乾鑫价目表里有大金/美的）
         pb = ORG_PRICEBOOKS.get(org, "")
         sysname, how = (match_product(src["model"], products) if products else (src["model"], "无快照直填"))

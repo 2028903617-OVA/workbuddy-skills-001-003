@@ -140,6 +140,46 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(pitem, "微蒸烤箱【西门子大类】")
 
 
+class TestClassOverride(unittest.TestCase):
+    """命令行分类覆盖 --pclass / --pitem（2026-10-16 加）。
+
+    场景：某品牌产品出现在**别组织**的表里，分类该按**产品实际品类**填，
+    而不是走该组织的固定规则（如大金固定「空调/空调」）。
+    """
+
+    def test_no_override_keeps_org_rule(self):
+        pc, pi, ok = bi.classify("大金线性3D气流风管式内机FYDGP32BAP", "大金", None, None)
+        self.assertEqual((pc, pi), ("空调", "空调"))
+        self.assertEqual(bi.apply_class_override(pc, pi, None, None), ("空调", "空调", False))
+
+    def test_both_given_overrides(self):
+        self.assertEqual(
+            bi.apply_class_override("空调", "空调", "净水", "前置过滤器"),
+            ("净水", "前置过滤器", True))
+
+    def test_only_pclass_given_leaves_pitem_blank(self):
+        # ★ 只给一项时另一项留空，避免「大类=净水(手工)+品项=空调(组织规则)」混搭
+        self.assertEqual(bi.apply_class_override("空调", "空调", "净水", None), ("净水", "", True))
+        self.assertEqual(bi.apply_class_override("空调", "空调", None, "前置过滤器"),
+                         ("", "前置过滤器", True))
+
+    def test_empty_string_means_force_blank(self):
+        # --pclass= --pitem= → 强制两项留空（用于修正组织规则填错的情况）
+        self.assertEqual(bi.apply_class_override("空调", "空调", "", ""), ("", "", True))
+
+    def test_whitespace_stripped(self):
+        self.assertEqual(bi.apply_class_override("", "", " 净水 ", " 前置过滤器 "),
+                         ("净水", "前置过滤器", True))
+
+    def test_override_counts_as_matched(self):
+        # 组织规则没匹配上关键词表（ok=False），但人工给了值 → 视为已处理
+        pc, pi, ok = bi.classify("某冷门型号XYZ", "美的", None, None)
+        self.assertFalse(ok)
+        pc2, pi2, ovr = bi.apply_class_override(pc, pi, "净水", "前置过滤器")
+        self.assertTrue(ovr)
+        self.assertEqual((pc2, pi2), ("净水", "前置过滤器"))
+
+
 class TestRoundPrice(unittest.TestCase):
     def test_round_half_up(self):
         self.assertEqual(bi.round_price(423.52), 424)
@@ -222,6 +262,53 @@ class TestProductMatching(unittest.TestCase):
                   "spec": "MB-AFB40C8", "code": "", "pclass": "", "pitem": ""}]
         name, how = bi.match_product("美的电饭煲 MB-AFB40C8", prods)
         self.assertEqual(name, "美的电饭煲MB-AFB40C8")
+
+
+class TestPriceColumnGuard(unittest.TestCase):
+    """★ 2026-10-16：源表识别不到「售价」列必须停下，不能静默写成空值。
+
+    事故：源表售价列表头写作「D价」，词表未收录 → col_index("price") 返回 None
+    → 售价被静默置空，明细建出来售价为空且全程不报错。护栏补在 load_source_rows。
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="plit_guard_")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _src(self, header, name="源表.xlsx"):
+        from openpyxl import Workbook
+        p = os.path.join(self.tmp, name)
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Sheet1"
+        ws.append(header)
+        ws.append(["大金线性3D气流风管式内机FYDGP32BAP", 5570, 5124, 5124, 4679][:len(header)])
+        wb.save(p)
+        return p
+
+    def test_missing_price_column_raises(self):
+        """只有限价/结算价/成本价、没有售价列 → 抛错，不静默写空值。"""
+        p = self._src(["产品官方名称及型号", "销售限制价", "销售结算价", "实际成本价"])
+        with self.assertRaises(ValueError) as cm:
+            bi.load_source_rows(p, brand_hint="大金")
+        self.assertIn("售价", str(cm.exception))
+
+    def test_d_price_column_satisfies_guard(self):
+        """「D价」已入词表 → 护栏放行，且售价取到 5570、列位为 1。"""
+        p = self._src(["产品官方名称及型号", "D价", "销售限制价", "销售结算价", "实际成本价"])
+        rows, brand, fmt, sheet, idx = bi.load_source_rows(p, brand_hint="大金")
+        self.assertEqual(idx["price"], 1)
+        self.assertEqual(rows[0]["price"], 5570.0)
+
+    def test_qixin_org_exempt_from_guard(self):
+        """启欣组织价格列本就留空 → 不因缺售价列而停止。"""
+        p = self._src(["产品官方名称及型号", "销售限制价", "销售结算价", "实际成本价"],
+                      name="启欣源表.xlsx")
+        rows, brand, fmt, sheet, idx = bi.load_source_rows(p, brand_hint="启欣")
+        self.assertIsNone(idx["price"])
+        self.assertIsNone(rows[0]["price"])
 
 
 class TestEndToEnd(unittest.TestCase):
@@ -379,6 +466,28 @@ class TestSemanticHeader(unittest.TestCase):
         self.assertEqual(bi.col_index(hdr, "model"), 1)
         self.assertEqual(bi.col_index(hdr, "price"), 2)
         self.assertEqual(bi.col_index(hdr, "brand"), 0)
+
+    def test_d_price_is_sale_price(self):
+        """★「D价」是售价类的写法变体（2026-10-16 大金批2 实测，用户确认）。
+
+        它只有 2 字符 → 按 SHORT_KW 规则**只允许整格相等**，不做包含匹配，
+        避免「D价格」「DD价」之类的列被误吃进售价。
+        历史教训：词表没收录时该列被**静默丢弃**，导致明细建出来售价为空。
+        """
+        self.assertIn("D价", bi.HEADER_SEMANTICS["price"])
+        self.assertTrue(bi.header_hit("D价", "D价"))
+        self.assertTrue(bi.header_hit("D价（含税）", "D价"))   # 归一化去括号后整格相等
+        self.assertFalse(bi.header_hit("D价格", "D价"))       # 短词不做包含匹配
+        self.assertFalse(bi.header_hit("A价", "D价"))
+
+        wb = self._wb([["产品官方名称及型号", "D价", "销售限制价", "销售结算价", "实际成本价"],
+                       ["大金线性3D气流风管式内机FYDGP32BAP", 5570, 5124, 5124, 4679]])
+        hdr_row, data_row, hdr = bi.find_header_row(wb["数据"])
+        self.assertEqual((hdr_row, data_row), (1, 2))
+        self.assertEqual(bi.col_index(hdr, "price"), 1)
+        self.assertEqual(bi.col_index(hdr, "limit"), 2)
+        self.assertEqual(bi.col_index(hdr, "settle"), 3)
+        self.assertEqual(bi.col_index(hdr, "cost"), 4)
 
     def test_apply_form_header_at_r3(self):
         wb = self._wb([["纷享销客价目表新增（变更）申请表"],

@@ -61,7 +61,7 @@ PRICEBOOKS = ORG_PRICEBOOKS  # 向后兼容旧名
 FIELD_VARIANTS = {
     "model": ["产品官方名称及型号", "产品", "型号规格", "规格型号", "型号标题",
               "物料名称", "商品名称"],
-    "price": ["零售建议价", "零售价", "价目表售价", "销售指导价", "指导价", "面价"],
+    "price": ["零售建议价", "零售价", "价目表售价", "销售指导价", "指导价", "面价", "D价"],
     # 「销售限价」= 导入模板的「品牌负责人审核价」列。
     # 2026-09-28 天猫库存物料价目表实测：源表列名写作「销售限价」，此前只认「销售限制价」，
     # 而「限价」是 2 字短词被 SHORT_KW 挡住只认整格相等 → 整列被漏掉，限价全空。
@@ -278,7 +278,7 @@ def parse_yymmdd(name):
 HEADER_SEMANTICS = {
     "model":  ["产品官方名称及型号", "产品", "型号规格", "规格型号", "型号标题",
                "物料名称", "商品名称", "货品名称"],
-    "price":  ["零售建议价", "零售价", "价目表售价", "销售指导价"],
+    "price":  ["零售建议价", "零售价", "价目表售价", "销售指导价", "D价"],
     "limit":  ["零售限制价", "销售限制价", "品牌负责人审核价", "限价"],
     "settle": ["销售结算价", "结算价", "底价"],
     "cost":   ["实际成本价", "成本价", "云仓底价"],
@@ -475,6 +475,19 @@ def load_source_rows(path, brand_hint=None):
     fmt, hdr_row, data_row, hdr = detect_format_and_rows(ws)
     brand = brand_hint or detect_brand(ws, fmt, hdr_row)
     idx = {k: col_index(hdr, k) for k in FIELD_VARIANTS}
+    # ★★ 护栏（2026-10-16 新增，用户确认）：售价列是必填语义，识别不到必须停下。
+    #   事故经过：源表售价列表头写作「D价」，词表未收录 → col_index("price") 返回 None
+    #   → 下面 to_number(g("price")) 静默得到 None → 明细被写成「售价为空」，全程不报错。
+    #   本文件之前的文档写着「源表缺必填价格列 → 停止」，但代码里从未实现，补上。
+    #   例外：启欣组织的价格列本就留空（见 QIXIN 行级规则，第 796 行附近），不做要求。
+    if idx.get("price") is None and brand != QIXIN:
+        raise ValueError(
+            "源表里识别不到「售价」列，已停止（否则会把售价静默写成空值）：\n"
+            "  表头原文：%s\n"
+            "  → 若该列表头是新写法，请把它**同时**补进 build_import.HEADER_SEMANTICS "
+            "与 build_import.FIELD_VARIANTS 的 price 列表，并补一条 test_build_import.py 用例；\n"
+            "  → 若本表确实没有售价列，请显式确认后再继续（不要直接绕过）。"
+            % [str(h) for h in hdr])
     rows = []
     for r in ws.iter_rows(min_row=data_row, max_row=ws.max_row, values_only=True):
         def g(k):
@@ -518,6 +531,20 @@ def classify(model, brand, src_pclass, src_pitem):
             picked = si if group == 0 else gen
             return picked[0], picked[1], True
     return "", "", False
+
+
+def apply_class_override(pclass, pitem, ovr_pclass, ovr_pitem):
+    """命令行分类覆盖（--pclass / --pitem）——场景：某品牌产品出现在别组织的表里，
+    分类该按**产品实际品类**填，而不是走该组织的固定规则。
+
+    规则：**只要任一覆盖参数非 None，就完全接管分类** —— 给了的用给的值，
+    没给的**留空**。这样可避免「大类=净水(手工) + 品项=空调(组织规则)」这种混搭。
+
+    返回 (pclass, pitem, overridden)。
+    """
+    if ovr_pclass is None and ovr_pitem is None:
+        return pclass, pitem, False
+    return (ovr_pclass or "").strip(), (ovr_pitem or "").strip(), True
 
 
 def find_snapshot(pattern, downloads, required_cols):

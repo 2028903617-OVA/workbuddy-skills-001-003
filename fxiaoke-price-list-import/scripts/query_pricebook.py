@@ -339,19 +339,25 @@ def field_codes(field_api_name):
 
 
 def to_code(field_api_name, label):
-    """label → 码值；找不到原样返回并标记。"""
+    """label → 码值；已是码值则原样通过；找不到原样返回并标记。"""
     if not label:
         return None, False
+    s = str(label).strip()
     m = field_codes(field_api_name)
-    if label in m:
-        return m[label], True
-    return label, False
+    if s in m:
+        return m[s], True
+    if s in set(m.values()):
+        return s, True          # ★ 直接传码值（如 --pclass 6）也算命中
+    return s, False
 
 
 # ---------------------------------------------------------------- 组装
 
-def build_plan(src, org=None, brand_hint=None):
-    """解析源表 + 实时查询，产出逐行计划。"""
+def build_plan(src, org=None, brand_hint=None, ovr_pclass=None, ovr_pitem=None):
+    """解析源表 + 实时查询，产出逐行计划。
+
+    ovr_pclass / ovr_pitem：命令行分类覆盖（见 bi.apply_class_override）。
+    """
     # 显式给了 --org 就先校验，别读了源表才发现组织不认识（快速失败）
     if org and org not in bi.ORG_PRICEBOOKS:
         raise SystemExit("组织「%s」不在组织→价目表映射表里，请确认组织名" % org)
@@ -391,11 +397,16 @@ def build_plan(src, org=None, brand_hint=None):
                               ("源表品牌列" if b_src else "未识别")))
         if item["brand"] and b_src and item["brand"] != b_src:
             item["notes"].append("品牌冲突·已按%s为准（源表写「%s」）" % (item["brand_src"], b_src))
-        # 大类/品项：按组织规则
+        # 大类/品项：命令行覆盖优先，其次按组织规则
         pclass, pitem, ok = bi.classify(model, org, r.get("src_pclass"), r.get("src_pitem"))
+        pclass, pitem, ovr = bi.apply_class_override(pclass, pitem, ovr_pclass, ovr_pitem)
         item["pclass"], item["pitem"] = pclass, pitem
-        item["class_matched"] = ok
-        if not ok:
+        item["class_matched"] = ok or ovr
+        item["class_overridden"] = ovr
+        if ovr:
+            item["notes"].append("★分类由命令行覆盖：大类=%s / 品项=%s（未给的项留空）"
+                                 % (pclass or "空", pitem or "空"))
+        elif not ok:
             item["notes"].append("分类未匹配关键词表 → 大类/品项留空（需你确认是否补填）")
         elif not (pclass or pitem):
             item["notes"].append("该品类在关键词表里定义为留空（大类/品项都不填），按组织规则")
@@ -545,10 +556,13 @@ def main():
     ap.add_argument("--org", help="组织（决定价目表）；不传则从源表识别")
     ap.add_argument("--brand", help="组织别名（等价 --org，兼容旧参数）")
     ap.add_argument("--apply", action="store_true", help="用户确认后才加：真正写入")
+    ap.add_argument("--pclass", help="覆盖产品大类（中文标签或码值）；给了就完全接管分类")
+    ap.add_argument("--pitem", help="覆盖产品品项（中文标签或码值）；给了就完全接管分类")
     ap.add_argument("--json", action="store_true", help="输出 JSON 而非精简文本")
     a = ap.parse_args()
 
-    res = build_plan(a.source, org=a.org or a.brand)
+    res = build_plan(a.source, org=a.org or a.brand,
+                     ovr_pclass=a.pclass, ovr_pitem=a.pitem)
     if a.json:
         print(json.dumps(res, ensure_ascii=False, indent=2, default=str))
         return

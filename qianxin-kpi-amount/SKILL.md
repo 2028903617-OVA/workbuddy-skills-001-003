@@ -1,106 +1,115 @@
 ---
 name: qianxin-kpi-amount
-description: Generate the monthly KPI assessment amount workbook for 乾鑫格力事业部 (乾鑫8月考核金额表) from three source files (7月模板 / 8月基础表 / 8月人员表), using the user's manually-tuned V2 template as the style authority, then apply only minimal post-processing (rate columns as 0.00%, total row without fill). Use when the user asks for "乾鑫考核金额表", "乾鑫考核表", "格力考核金额", or similar — especially the multi-sheet workbook with 新绩效/基数表/人员/目标 and the F/K/P/U 店长-vs-个人 口径 fix.
+description: 生成乾鑫格力事业部的月度考核金额表（四 sheet：新绩效/基数表/人员/目标）。通用版：换月只需丢入本月基础表+人员表，脚本自动推导目标列、门店分组、角色规则、阈值表、人员补齐、目标表重排与行样式。适用「乾鑫考核金额表」「乾鑫考核表」「格力考核金额」「乾鑫{K}月绩效」等请求，含 F/K/P/U 店长-vs-个人 口径。
+version: 2.0.0
 agent_created: true
 ---
 
-# 乾鑫 月度考核金额表 生成 + 美化
+# 乾鑫 月度考核金额表 生成（通用版 v2.0）
 
 ## Overview
 
-This skill generates the styled monthly KPI assessment amount workbook for 乾鑫格力事业部 from three input files, then applies the standardized beautification that was iterated and confirmed with the user:
+从「上期模板 + 本月基础表 + 本月人员导出 + 样式模板」生成乾鑫格力事业部的月度考核金额表，
+产出四个 sheet：**新绩效 / 基数表 / 人员 / 目标**。
 
-1. **F1** — 7月模板（四 sheet 骨架：新绩效/基数表/人员/目标）
-2. **F2** — 8月基础表（新格式，嵌套进 基数表）
-3. **F3** — 8月人员导出（嵌套进 人员表，停用人员从 F1 补齐）
+v2.0 相对 v1（8 月专用）的核心变化：**换月不再改脚本**。目标列、门店分组、角色规则、
+阈值表、人员补齐、目标表重排、行样式全部自动推导；只有「新人目标」与「新人高亮色」必须显式给。
+详见 `references/business_rules.md` 第十一节。
 
-The output workbook contains four sheets. The script also fixes the **F/K/P/U four-item achievement bonus 口径** (店长 references the store subtotal row; 销售顾问/客户经理 compute per-person), unifies fonts/alignment/borders, unifies percentage vs decimal number formats, and marks `已停用` cells red.
+## 输入
 
-## Triggers
+| 参数 | 含义 | 说明 |
+|---|---|---|
+| `F1` | 上期「考核金额表」 | 提供 **目标表基准**（五个月目标、门店短码、分销行）与 **人员表补齐池** |
+| `F2` | 本月基础表 | 「个人考核指标达成率（表格）」导出，14 列；**分组与角色都从它推导** |
+| `F3` | 本月人员导出 | 「人员对象导出结果」；作为人员表主数据 |
+| `月份` | `8 9 10 11 12` | 决定目标表取列（8→D 9→E 10→F 11→G 12→H）与输出文件名 |
+| `V2`（可选） | 样式模板 | 不传则自动找 `乾鑫{月}月考核金额表_美化版.xlsx`，再退回 `F1` |
+| 补充人员表（可选，可多个） | 本月导出漏掉的人 | 如调岗被还原的在册人员；按姓名自动补齐 |
 
-Use this skill when the user requests:
+## 用法
 
-- "生成乾鑫考核金额表" / "做乾鑫格力考核表"
-- "乾鑫8月考核金额表" / "乾鑫{月}月考核金额表"
-- Any task involving the 乾鑫 bonus/commission amount workbook with sheets 新绩效/基数表/人员/目标.
-- Re-running the beautification (font/align/border/percent/red) on an existing 乾鑫 workbook.
+```bash
+python scripts/gen_qianxin_amount.py <F1> <F2> <F3> <月份> [V2] [补充人员表 ...] \
+  [--target-col=E] [--new-target="汪凌杰:店长:15,15,15,15,15"] [--highlight="汪凌杰:7:0.6"]
+```
 
-## Required Inputs
+示例（2026-09 实际跑法）：
 
-Ask the user for (or infer from the working directory's `乾鑫8月源文件/`):
+```bash
+python "…/qianxin-kpi-amount/scripts/gen_qianxin_amount.py" \
+  "乾鑫9月源文件/F1_乾鑫7月考核金额.xlsx" \
+  "乾鑫9月源文件/F2_9月基础表.xlsx" \
+  "乾鑫9月源文件/F3_9月人员表.xlsx" 9 \
+  "乾鑫9月源文件/V2_样式模板.xlsx" \
+  "乾鑫9月源文件/F3B_8月人员表.xlsx" \
+  --new-target="汪凌杰:店长:15,15,15,15,15" \
+  --highlight="汪凌杰:7:0.6"
+```
 
-1. **F1_path**: 7月模板 workbook (`F1_乾鑫7月考核金额.xlsx`).
-2. **F2_path**: 8月基础表 (`F2_8月基础表.xlsx`).
-3. **F3_path**: 8月人员导出 (`F3_8月人员表.xlsx`).
-4. **report_month**: 报表月份数字（默认 `8`），仅用于输出文件名。
+`--new-target`：`姓名:职位:8月,9月,10月,11月,12月`（多个用 `;` 分隔）。
+`--highlight`：`姓名:theme索引:tint` 或 `姓名:#RRGGBB`（多个用 `;` 分隔）。
 
-> 月月必改（换月时更新 `scripts/gen_qianxin_amount.py` 内）：`GROUPS`（5店21人归属与名单）、`STOPPED`（停用人员原名→带后缀名映射）。详见 `references/business_rules.md` 第三节。
+## 自动推导（无需配置）
+
+1. **目标列**：月份 → 列；也可 `--target-col=` 覆盖。
+2. **表头容错**：`二级部门(主属部门)` / `主属部门-3` / `主属部门-2` 等历史表头都认。
+3. **门店分组**：按 `F2` 部门列的出现顺序自动分组，成员按 `F2` 行序 —— 不再手写 `GROUPS`。
+4. **角色规则**：按 `F2` 的「考核角色」列查 `ROLE_RULES`，自动决定 基础奖金 / 阈值档 / 是否清零 / 是否引用门店小计。
+5. **阈值表**：按实际出现的**角色名**逐行生成（R36 起，复制上行样式）。M/R/W 是按角色名 LOOKUP 的，所以每个角色都要有一行。
+6. **人员表补齐**：`F2` 名册 − `F3` 名单 → 依次到「补充人员表 → F1 人员表」**按列名映射**取行（各版本人员表列数/列序不同，绝不能按位置读）；部门列以 `F2` 为准。
+7. **目标表重排**：按新分组重建；店内人员保留上期相对顺序，本店新进的追加到末尾；门店短码自动映射。
+8. **行样式**：扫描 `V2` 自动识别 普通行 / 普通小计行 / 停用行 / 高亮行；
+   **门店小计行的底色 = 本店店长的底色**（8 月红星店是方大露的绿 → 9 月跟着方大露转到华东店）。
+
+## 必须显式配置（脚本拒绝推算，缺就报错退出）
+
+- `NEW_TARGET` / `--new-target`：样式模板目标表里**没有的新人**（如新上岗店长）的职位与 5 个月目标。
+- `EXTRA_HIGHLIGHT` / `--highlight`：样式模板里**没有的新人/新门店**的高亮色。
+- `ROLE_RULES` / `THRESHOLD_TIERS`：出现未登记角色或未定义阈值档时**直接报错**，不猜。
 
 ## Workflow
 
-1. 打开 F1 模板，清空并重建「新绩效」人员行 / 门店小计行 / 合计行。
-2. 嵌套 F2 到「基数表」（值复制，绩效表经 `LOOKUP(基数表!C:C, 基数表!F:F)` 取金额）。
-3. 嵌套 F3 到「人员表」，并从 F1 补齐停用 3 人；A 列=`=U{行}`、B 列=数组公式。
-4. 目标表对停用人员姓名加 `(已停用)` 后缀。
-5. **F/K/P/U 口径**：店长引用本店小计行，销售顾问/客户经理按个人达成率自算。
-6. **样式继承 V2 模板**：清空值但保留 font/fill/border/alignment/number_format，不硬编码底色/加粗/字体/number_format/已停用标红。
-7. **合计行样式**：V2 模板无合计行，新增合计行继承 R27 样式，但去除底色；随后统一 J/O/T/Y 达成率列为 `0.00%`，防止 V2 模板中个别小计行 `General` 导致百分比/小数混排。
-8. 保存（若规范名被 WPS 占用，自动改用 `_v{n}.xlsx`）。
-
-## Script
-
-Run the bundled single-pass script (generation + 口径 + 美化 + 格式统一 + 标红):
-
-```bash
-python scripts/gen_qianxin_amount.py <F1_path> <F2_path> <F3_path> <report_month>
-```
-
-Example (using the working-directory source layout):
-
-```bash
-python scripts/gen_qianxin_amount.py \
-  "乾鑫8月源文件/F1_乾鑫7月考核金额.xlsx" \
-  "乾鑫8月源文件/F2_8月基础表.xlsx" \
-  "乾鑫8月源文件/F3_8月人员表.xlsx" \
-  8
-```
-
-If arguments are omitted, the script defaults to the `乾鑫8月源文件/` relative paths and `report_month=8`.
+1. 读 `F2` → 自动分组 + 角色分布；校验角色/阈值档齐全。
+2. 打开 `V2` → 扫描样式库（高亮行/停用行/普通行/小计行）+ 识别各店店长。
+3. 重建「新绩效」：人员行（含 F/K/P/U 口径）→ 门店小计行 → 合计行 → 按名称/角色复刻行样式 → 阈值表 → 列级数字格式统一。
+4. 重建「基数表」：整表嵌套 `F2` 的值 + 继承行样式。
+5. 重建「人员」：`F3` 主数据 + 自动补齐；A 列 = `={部门列}{行}`（列号动态）、B 列 = 数组公式。
+6. 重建「目标」：按新分组重排 + 门店小计 = `SUM(成员)` + 分销/合计。
+7. 保存（若规范名被 WPS/Excel 占用，自动改用 `_v{n}.xlsx`）。
 
 ## Verification Checklist
 
-After generating, verify against the produced workbook:
+生成后逐项核对：
 
-- **四 sheet 齐全**：新绩效 / 基数表 / 人员 / 目标。
-- **行结构**：人员 21 人（5 店），小计行 5 个（R6/8/13/19/27 示例，随 GROUPS 变），合计行 1 个。
+- **四 sheet 齐全**，且 `新绩效` 尺寸 = `A1:AE{合计行}`。
+- **行结构**：人员数 = `F2` 人数；小计行 = 门店数；合计行 1 个。
 - **F/K/P/U 口径**：
-  - 店长个人行 F/K/P/U = `=F{sub}`/`=K{sub}`/`=P{sub}`/`=U{sub}`（引用门店小计）。
-  - 销售顾问/客户经理个人行 F = `=IF(J>=0.7,IF(J>=1,G,J*G),0)`，K=`=IF(O>=1,L,0)`，P=`=IF(T>=R,Q,0)`，U=`=IF(Y>=W,V,0)`。
-- **数组公式首字母**：所有 `ArrayFormula` 的 `text` 必须以 `=` 开头（无 `OOKUP` 失效），数量与预期一致。
-- **数字格式**：新绩效 J/O/T/Y 在 R2~合计行统一为 `0.00%`，无 General/小数混排。
-- **已停用标红**：由 V2 模板决定，脚本不再主动标红；若 V2 未标红则不再追加。
-- **样式继承**：R1-R27 与 V2 模板逐格零差异；合计行 R28 无底色、其余样式继承 R27。
-- **边框/对齐/冻结**：继承 V2 模板，脚本不再主动设置。
-- **三表数据自洽**：基数表嵌套 F2 全量；人员表 = F3 人员 + 停用补齐；目标表停用已加后缀。
+  - 店长个人行 = `=F{小计行}` / `=K{…}` / `=P{…}` / `=U{…}`；
+  - 其余个人行 = `=IF(J>=0.7,IF(J>=1,G,J*G),0)` / `=IF(O>=1,L,0)` / `=IF(T>=R,Q,0)` / `=IF(Y>=W,V,0)`。
+  - 清零角色（带教导师）D 列 = 数字 `0`（不是公式）。
+- **合计行**：`=SUM(D2:D{合计-1})-D{各小计}…`；**整行无底色**。
+- **阈值表**：行数 = 实际角色数，角色名齐全（含带教导师），带边框。
+- **数组公式**：所有 `ArrayFormula.text` 必须以 `=` 开头（本次 185 个全通过）。
+- **行底色**：停用行 C 列红底 `FFFF0000`；高亮行 A..Y 连续；门店小计底色 = 本店店长底色。
+- **数字格式**：金额列 `0.00_ `、指标列 `0.00`、比率列 `0.00%`。
+- **三表数据自洽**：每人都能在 目标表/基数表/人员表 定位（否则新绩效 A 列会 `#N/A`）。
+- **交付前用 Excel/WPS 打开重算一次**，核对关键金额（脚本只写公式，不算值）。
+
+## 文件命名
+
+输出统一为 `乾鑫{月}月考核金额表_美化版.xlsx`；生成前提醒用户关闭同名文件（占用会自动改 `_v{n}`）。
+
+## 做表前检查清单
+
+- [ ] 本次月份？（决定目标列与输出名）
+- [ ] 三件套是否齐全（上期模板 / 本月基础表 / 本月人员导出）？
+- [ ] 本月是否有**新人**？→ 必须有 `--new-target`（脚本会报错提醒）
+- [ ] 新人/新门店是否需要高亮？→ `--highlight`
+- [ ] 本月是否有**人员导出漏掉的在册人员**（调岗还原等）？→ 传「补充人员表」参数
+- [ ] 是否有**新角色**？→ 先在 `ROLE_RULES` 登记（含阈值档、是否清零、是否引用小计）
+- [ ] 生成后按 Verification Checklist 逐项核对，再交付。
 
 ## 业务规则参考
 
-See `references/business_rules.md` for the full sheet structure, the F/K/P/U 口径 table, the AB:AE threshold table, the ArrayFormula `=` pitfall, the beautification checklist, and the percentage/decimal unification rules.
-
-## 文件命名规范
-
-输出文件统一命名为 `乾鑫{月}月考核金额表_美化版.xlsx`（如 `乾鑫8月考核金额表_美化版.xlsx`）。生成前提醒用户关闭旧文件，避免 WPS 占用导致无法覆盖；若占用脚本自动改用 `_v{n}.xlsx` 临时名。
-
-## 做表前检查清单（必做）
-
-每次生成前逐项确认，缺项主动提醒用户：
-
-- [ ] **本次报表月份？**（决定输出文件名与 GROUPS/STOPPED 是否需更新）
-- [ ] **三件套是否齐全？**（F1 7月模板 / F2 8月基础表 / F3 8月人员导出）
-- [ ] **GROUPS 门店归属与名单是否仍是本月口径？**（换月必查，禁用写死）
-- [ ] **STOPPED 停用人员映射是否准确？**（影响人员表补齐与目标表改名）
-- [ ] **F/K/P/U 口径是否与确认一致？**（店长→门店小计，个人→自算）
-- [ ] **四 sheet 是否都保留？**（新绩效 + 基数表 + 人员 + 目标）
-- [ ] **数字格式是否统一（达成率全百分比、金额全 2 位）？**
-- [ ] **已停用是否标红？**
-- [ ] **生成后自检**：数组公式首字母、格式、标红、行结构，再交付。
+完整口径见 `references/business_rules.md`；v1→v2 的改造说明与回归结论见其第十一节。
